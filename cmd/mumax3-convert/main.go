@@ -469,7 +469,7 @@ func parseColor(s string) color.RGBA {
 	if c, ok := colors[s]; ok {
 		return c
 	}
-	str := fmt.Sprintln("Refusing to use ugly color '" + s + "', options are:")
+	str := fmt.Sprintln("Refusing to use ugly colour '" + s + "', options are:")
 	for k := range colors {
 		str += fmt.Sprintf("%s,", k)
 	}
@@ -493,5 +493,32 @@ var colors = map[string]color.RGBA{
 	"darkcyan":    {R: 0, G: 127, B: 127, A: 255},
 	"magenta":     {R: 255, G: 0, B: 255, A: 255},
 	"darkmagenta": {R: 127, G: 0, B: 127, A: 255},
+	"orange":      color.RGBA{R: 253, G: 127, B: 35, A: 255},
+	"darkorange":  color.RGBA{R: 126, G: 63, B: 17, A: 255},
 	"gray":        {R: 127, G: 127, B: 127, A: 255},
+	"viridis1":    color.RGBA{R: 253, G: 231, B: 37, A: 255},
+	"viridis2":    color.RGBA{R: 94, G: 201, B: 98, A: 255},
+	"viridis3":    color.RGBA{R: 33, G: 145, B: 140, A: 255},
+	"viridis4":    color.RGBA{R: 59, G: 82, B: 139, A: 255},
+	"viridis5":    color.RGBA{R: 68, G: 1, B: 84, A: 255},
+	"inferno1":    color.RGBA{R: 252, G: 255, B: 164, A: 255},
+	"inferno2":    color.RGBA{R: 249, G: 142, B: 9, A: 255},
+	"inferno3":    color.RGBA{R: 188, G: 55, B: 84, A: 255},
+	"inferno4":    color.RGBA{R: 87, G: 16, B: 110, A: 255},
+	"inferno5":    color.RGBA{R: 0, G: 0, B: 4, A: 255},
+	"magma1":      color.RGBA{R: 252, G: 253, B: 191, A: 255},
+	"magma2":      color.RGBA{R: 252, G: 137, B: 97, A: 255},
+	"magma3":      color.RGBA{R: 183, G: 55, B: 121, A: 255},
+	"magma4":      color.RGBA{R: 81, G: 18, B: 124, A: 255},
+	"magma5":      color.RGBA{R: 0, G: 0, B: 4, A: 255},
+	"plasma1":     color.RGBA{R: 240, G: 249, B: 33, A: 255},
+	"plasma2":     color.RGBA{R: 248, G: 149, B: 64, A: 255},
+	"plasma3":     color.RGBA{R: 204, G: 71, B: 120, A: 255},
+	"plasma4":     color.RGBA{R: 126, G: 3, B: 168, A: 255},
+	"plasma5":     color.RGBA{R: 13, G: 8, B: 135, A: 255},
+	"moreland1":   color.RGBA{R: 59, G: 76, B: 192, A: 255},
+	"moreland2":   color.RGBA{R: 137, G: 175, B: 252, A: 255},
+	"moreland3":   color.RGBA{R: 221, G: 221, B: 221, A: 255},
+	"moreland4":   color.RGBA{R: 243, G: 155, B: 125, A: 255},
+	"moreland5":   color.RGBA{R: 180, G: 4, B: 38, A: 255},
 }
