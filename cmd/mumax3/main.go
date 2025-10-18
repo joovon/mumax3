@@ -166,6 +166,7 @@ func goServeGUI() string {
 
 // print version to stdout
 func printVersion() {
+	engine.LogOut("--------------------------------------------------------------------")
 	engine.LogOut(engine.UNAME)
 	engine.LogOut(fmt.Sprintf("commit hash: %s", commitHash))
 	engine.LogOut(getCPUInfo())
@@ -173,12 +174,22 @@ func printVersion() {
 	osInfo := fmt.Sprintf("OS  info: %s, Hostname: %s", getOSInfo(), getHostname())
 	engine.LogOut(osInfo)
 	engine.LogOut(fmt.Sprintf("Timestamp: %s", time.Now().Format("2006-01-02 15:04:05")))
-	engine.LogOut("(c) Arne Vansteenkiste, Dynamat LAB, Ghent University, Belgium")
-	engine.LogOut("This is free software without any warranty. See license.txt")
-	engine.LogOut("********************************************************************//")
-	engine.LogOut("  If you use mumax in any work or publication,                      //")
-	engine.LogOut("  we kindly ask you to cite the references in references.bib        //")
-	engine.LogOut("********************************************************************//")
+	engine.LogOut("--------------------------------------------------------------------")
+	engine.LogOut("  (c) Arne Vansteenkiste, Dynamat LAB, Ghent University, Belgium")
+	engine.LogOut("  This is free software without any warranty. See license.txt")
+	engine.LogOut("  ")
+	engine.LogOut("  If you use mumax in any work or publication,                      ")
+	engine.LogOut("  we kindly ask you to cite the references in references.bib        ")
+	engine.LogOut("--------------------------------------------------------------------")
+	engine.LogOut("  This version provides the additional extensions: ")
+	engine.LogOut("  • arrayfromfile")
+	engine.LogOut("  • Dfilm")
+	engine.LogOut("  • ext_coreposTB")
+	engine.LogOut("  • ext_eigenmodeprojection(500)")
+	engine.LogOut("  • ext_eigenmodeprojectionReIm(500)")
+	engine.LogOut("  • ext_reversedspins")
+	engine.LogOut("  • strayfield")
+	engine.LogOut("--------------------------------------------------------------------")
 }
 
 func getHostname() string {
