@@ -188,6 +188,7 @@ func printVersion() {
 	engine.LogOut("  • ext_eigenmodeprojection(500)")
 	engine.LogOut("  • ext_eigenmodeprojectionReIm(500)")
 	engine.LogOut("  • ext_reversedspins")
+	engine.LogOut("  • ext_strobeaverage")
 	engine.LogOut("  • strayfield")
 	engine.LogOut("--------------------------------------------------------------------")
 }
