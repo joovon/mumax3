@@ -69,10 +69,14 @@ func k_reducemaxdiff_async(src1 unsafe.Pointer, src2 unsafe.Pointer, dst unsafe.
 
 // maps compute capability on PTX code for reducemaxdiff kernel.
 var reducemaxdiff_map = map[int]string{0: "",
-	75: reducemaxdiff_ptx_75,
-	80: reducemaxdiff_ptx_80,
-	86: reducemaxdiff_ptx_86,
-	89: reducemaxdiff_ptx_89}
+	75:  reducemaxdiff_ptx_75,
+	80:  reducemaxdiff_ptx_80,
+	86:  reducemaxdiff_ptx_86,
+	87:  reducemaxdiff_ptx_87,
+	89:  reducemaxdiff_ptx_89,
+	90:  reducemaxdiff_ptx_90,
+	100: reducemaxdiff_ptx_100,
+	120: reducemaxdiff_ptx_120}
 
 // reducemaxdiff PTX code for various compute capabilities.
 const (
@@ -622,6 +626,188 @@ $L__BB0_15:
 }
 
 `
+	reducemaxdiff_ptx_87 = `
+.version 8.8
+.target sm_87
+.address_size 64
+
+	// .globl	reducemaxdiff
+
+.visible .entry reducemaxdiff(
+	.param .u64 reducemaxdiff_param_0,
+	.param .u64 reducemaxdiff_param_1,
+	.param .u64 reducemaxdiff_param_2,
+	.param .f32 reducemaxdiff_param_3,
+	.param .u32 reducemaxdiff_param_4
+)
+{
+	.reg .pred 	%p<11>;
+	.reg .f32 	%f<61>;
+	.reg .b32 	%r<39>;
+	.reg .b64 	%rd<27>;
+	// demoted variable
+	.shared .align 4 .b8 _ZZ13reducemaxdiffE5sdata[2048];
+
+	ld.param.u64 	%rd12, [reducemaxdiff_param_0];
+	ld.param.u64 	%rd13, [reducemaxdiff_param_1];
+	ld.param.u64 	%rd11, [reducemaxdiff_param_2];
+	ld.param.f32 	%f60, [reducemaxdiff_param_3];
+	ld.param.u32 	%r17, [reducemaxdiff_param_4];
+	cvta.to.global.u64 	%rd1, %rd13;
+	cvta.to.global.u64 	%rd2, %rd12;
+	mov.u32 	%r38, %ntid.x;
+	mov.u32 	%r18, %ctaid.x;
+	mov.u32 	%r2, %tid.x;
+	mad.lo.s32 	%r36, %r18, %r38, %r2;
+	mov.u32 	%r19, %nctaid.x;
+	mul.lo.s32 	%r4, %r19, %r38;
+	setp.ge.s32 	%p1, %r36, %r17;
+	@%p1 bra 	$L__BB0_7;
+
+	add.s32 	%r20, %r4, %r17;
+	add.s32 	%r21, %r36, %r4;
+	not.b32 	%r22, %r21;
+	add.s32 	%r23, %r20, %r22;
+	div.u32 	%r5, %r23, %r4;
+	add.s32 	%r24, %r5, 1;
+	and.b32  	%r35, %r24, 3;
+	setp.eq.s32 	%p2, %r35, 0;
+	@%p2 bra 	$L__BB0_4;
+
+	mul.wide.s32 	%rd14, %r36, 4;
+	add.s64 	%rd26, %rd1, %rd14;
+	mul.wide.s32 	%rd4, %r4, 4;
+	add.s64 	%rd25, %rd2, %rd14;
+
+$L__BB0_3:
+	.pragma "nounroll";
+	ld.global.nc.f32 	%f10, [%rd26];
+	ld.global.nc.f32 	%f11, [%rd25];
+	sub.f32 	%f12, %f11, %f10;
+	abs.f32 	%f13, %f12;
+	max.f32 	%f60, %f60, %f13;
+	add.s32 	%r36, %r36, %r4;
+	add.s64 	%rd26, %rd26, %rd4;
+	add.s64 	%rd25, %rd25, %rd4;
+	add.s32 	%r35, %r35, -1;
+	setp.ne.s32 	%p3, %r35, 0;
+	@%p3 bra 	$L__BB0_3;
+
+$L__BB0_4:
+	setp.lt.u32 	%p4, %r5, 3;
+	@%p4 bra 	$L__BB0_7;
+
+	mul.wide.s32 	%rd10, %r4, 4;
+
+$L__BB0_6:
+	mul.wide.s32 	%rd15, %r36, 4;
+	add.s64 	%rd16, %rd2, %rd15;
+	add.s64 	%rd17, %rd1, %rd15;
+	ld.global.nc.f32 	%f14, [%rd17];
+	ld.global.nc.f32 	%f15, [%rd16];
+	sub.f32 	%f16, %f15, %f14;
+	abs.f32 	%f17, %f16;
+	max.f32 	%f18, %f60, %f17;
+	add.s64 	%rd18, %rd16, %rd10;
+	add.s64 	%rd19, %rd17, %rd10;
+	ld.global.nc.f32 	%f19, [%rd19];
+	ld.global.nc.f32 	%f20, [%rd18];
+	sub.f32 	%f21, %f20, %f19;
+	abs.f32 	%f22, %f21;
+	max.f32 	%f23, %f18, %f22;
+	add.s32 	%r25, %r36, %r4;
+	add.s32 	%r26, %r25, %r4;
+	add.s64 	%rd20, %rd18, %rd10;
+	add.s64 	%rd21, %rd19, %rd10;
+	ld.global.nc.f32 	%f24, [%rd21];
+	ld.global.nc.f32 	%f25, [%rd20];
+	sub.f32 	%f26, %f25, %f24;
+	abs.f32 	%f27, %f26;
+	max.f32 	%f28, %f23, %f27;
+	add.s32 	%r27, %r26, %r4;
+	add.s64 	%rd22, %rd20, %rd10;
+	add.s64 	%rd23, %rd21, %rd10;
+	ld.global.nc.f32 	%f29, [%rd23];
+	ld.global.nc.f32 	%f30, [%rd22];
+	sub.f32 	%f31, %f30, %f29;
+	abs.f32 	%f32, %f31;
+	max.f32 	%f60, %f28, %f32;
+	add.s32 	%r36, %r27, %r4;
+	setp.lt.s32 	%p5, %r36, %r17;
+	@%p5 bra 	$L__BB0_6;
+
+$L__BB0_7:
+	shl.b32 	%r28, %r2, 2;
+	mov.u32 	%r29, _ZZ13reducemaxdiffE5sdata;
+	add.s32 	%r14, %r29, %r28;
+	st.shared.f32 	[%r14], %f60;
+	bar.sync 	0;
+	setp.lt.u32 	%p6, %r38, 66;
+	@%p6 bra 	$L__BB0_11;
+
+$L__BB0_8:
+	shr.u32 	%r16, %r38, 1;
+	setp.ge.u32 	%p7, %r2, %r16;
+	@%p7 bra 	$L__BB0_10;
+
+	ld.shared.f32 	%f33, [%r14];
+	shl.b32 	%r30, %r16, 2;
+	add.s32 	%r31, %r14, %r30;
+	ld.shared.f32 	%f34, [%r31];
+	max.f32 	%f35, %f33, %f34;
+	st.shared.f32 	[%r14], %f35;
+
+$L__BB0_10:
+	bar.sync 	0;
+	setp.gt.u32 	%p8, %r38, 131;
+	mov.u32 	%r38, %r16;
+	@%p8 bra 	$L__BB0_8;
+
+$L__BB0_11:
+	setp.gt.s32 	%p9, %r2, 31;
+	@%p9 bra 	$L__BB0_13;
+
+	ld.volatile.shared.f32 	%f36, [%r14];
+	ld.volatile.shared.f32 	%f37, [%r14+128];
+	max.f32 	%f38, %f36, %f37;
+	st.volatile.shared.f32 	[%r14], %f38;
+	ld.volatile.shared.f32 	%f39, [%r14+64];
+	ld.volatile.shared.f32 	%f40, [%r14];
+	max.f32 	%f41, %f40, %f39;
+	st.volatile.shared.f32 	[%r14], %f41;
+	ld.volatile.shared.f32 	%f42, [%r14+32];
+	ld.volatile.shared.f32 	%f43, [%r14];
+	max.f32 	%f44, %f43, %f42;
+	st.volatile.shared.f32 	[%r14], %f44;
+	ld.volatile.shared.f32 	%f45, [%r14+16];
+	ld.volatile.shared.f32 	%f46, [%r14];
+	max.f32 	%f47, %f46, %f45;
+	st.volatile.shared.f32 	[%r14], %f47;
+	ld.volatile.shared.f32 	%f48, [%r14+8];
+	ld.volatile.shared.f32 	%f49, [%r14];
+	max.f32 	%f50, %f49, %f48;
+	st.volatile.shared.f32 	[%r14], %f50;
+	ld.volatile.shared.f32 	%f51, [%r14+4];
+	ld.volatile.shared.f32 	%f52, [%r14];
+	max.f32 	%f53, %f52, %f51;
+	st.volatile.shared.f32 	[%r14], %f53;
+
+$L__BB0_13:
+	setp.ne.s32 	%p10, %r2, 0;
+	@%p10 bra 	$L__BB0_15;
+
+	ld.shared.f32 	%f54, [_ZZ13reducemaxdiffE5sdata];
+	abs.f32 	%f55, %f54;
+	mov.b32 	%r32, %f55;
+	cvta.to.global.u64 	%rd24, %rd11;
+	atom.global.max.s32 	%r33, [%rd24], %r32;
+
+$L__BB0_15:
+	ret;
+
+}
+
+`
 	reducemaxdiff_ptx_89 = `
 .version 8.8
 .target sm_89
@@ -803,5 +989,519 @@ $L__BB0_15:
 
 }
 
+`
+	reducemaxdiff_ptx_90 = `
+.version 8.8
+.target sm_90
+.address_size 64
+
+	// .globl	reducemaxdiff
+
+.visible .entry reducemaxdiff(
+	.param .u64 reducemaxdiff_param_0,
+	.param .u64 reducemaxdiff_param_1,
+	.param .u64 reducemaxdiff_param_2,
+	.param .f32 reducemaxdiff_param_3,
+	.param .u32 reducemaxdiff_param_4
+)
+{
+	.reg .pred 	%p<11>;
+	.reg .f32 	%f<61>;
+	.reg .b32 	%r<39>;
+	.reg .b64 	%rd<27>;
+	// demoted variable
+	.shared .align 4 .b8 _ZZ13reducemaxdiffE5sdata[2048];
+
+	ld.param.u64 	%rd12, [reducemaxdiff_param_0];
+	ld.param.u64 	%rd13, [reducemaxdiff_param_1];
+	ld.param.u64 	%rd11, [reducemaxdiff_param_2];
+	ld.param.f32 	%f60, [reducemaxdiff_param_3];
+	ld.param.u32 	%r17, [reducemaxdiff_param_4];
+	cvta.to.global.u64 	%rd1, %rd13;
+	cvta.to.global.u64 	%rd2, %rd12;
+	mov.u32 	%r38, %ntid.x;
+	mov.u32 	%r18, %ctaid.x;
+	mov.u32 	%r2, %tid.x;
+	mad.lo.s32 	%r36, %r18, %r38, %r2;
+	mov.u32 	%r19, %nctaid.x;
+	mul.lo.s32 	%r4, %r19, %r38;
+	setp.ge.s32 	%p1, %r36, %r17;
+	@%p1 bra 	$L__BB0_7;
+
+	add.s32 	%r20, %r4, %r17;
+	add.s32 	%r21, %r36, %r4;
+	not.b32 	%r22, %r21;
+	add.s32 	%r23, %r20, %r22;
+	div.u32 	%r5, %r23, %r4;
+	add.s32 	%r24, %r5, 1;
+	and.b32  	%r35, %r24, 3;
+	setp.eq.s32 	%p2, %r35, 0;
+	@%p2 bra 	$L__BB0_4;
+
+	mul.wide.s32 	%rd14, %r36, 4;
+	add.s64 	%rd26, %rd1, %rd14;
+	mul.wide.s32 	%rd4, %r4, 4;
+	add.s64 	%rd25, %rd2, %rd14;
+
+$L__BB0_3:
+	.pragma "nounroll";
+	ld.global.nc.f32 	%f10, [%rd26];
+	ld.global.nc.f32 	%f11, [%rd25];
+	sub.f32 	%f12, %f11, %f10;
+	abs.f32 	%f13, %f12;
+	max.f32 	%f60, %f60, %f13;
+	add.s32 	%r36, %r36, %r4;
+	add.s64 	%rd26, %rd26, %rd4;
+	add.s64 	%rd25, %rd25, %rd4;
+	add.s32 	%r35, %r35, -1;
+	setp.ne.s32 	%p3, %r35, 0;
+	@%p3 bra 	$L__BB0_3;
+
+$L__BB0_4:
+	setp.lt.u32 	%p4, %r5, 3;
+	@%p4 bra 	$L__BB0_7;
+
+	mul.wide.s32 	%rd10, %r4, 4;
+
+$L__BB0_6:
+	mul.wide.s32 	%rd15, %r36, 4;
+	add.s64 	%rd16, %rd2, %rd15;
+	add.s64 	%rd17, %rd1, %rd15;
+	ld.global.nc.f32 	%f14, [%rd17];
+	ld.global.nc.f32 	%f15, [%rd16];
+	sub.f32 	%f16, %f15, %f14;
+	abs.f32 	%f17, %f16;
+	max.f32 	%f18, %f60, %f17;
+	add.s64 	%rd18, %rd16, %rd10;
+	add.s64 	%rd19, %rd17, %rd10;
+	ld.global.nc.f32 	%f19, [%rd19];
+	ld.global.nc.f32 	%f20, [%rd18];
+	sub.f32 	%f21, %f20, %f19;
+	abs.f32 	%f22, %f21;
+	max.f32 	%f23, %f18, %f22;
+	add.s32 	%r25, %r36, %r4;
+	add.s32 	%r26, %r25, %r4;
+	add.s64 	%rd20, %rd18, %rd10;
+	add.s64 	%rd21, %rd19, %rd10;
+	ld.global.nc.f32 	%f24, [%rd21];
+	ld.global.nc.f32 	%f25, [%rd20];
+	sub.f32 	%f26, %f25, %f24;
+	abs.f32 	%f27, %f26;
+	max.f32 	%f28, %f23, %f27;
+	add.s32 	%r27, %r26, %r4;
+	add.s64 	%rd22, %rd20, %rd10;
+	add.s64 	%rd23, %rd21, %rd10;
+	ld.global.nc.f32 	%f29, [%rd23];
+	ld.global.nc.f32 	%f30, [%rd22];
+	sub.f32 	%f31, %f30, %f29;
+	abs.f32 	%f32, %f31;
+	max.f32 	%f60, %f28, %f32;
+	add.s32 	%r36, %r27, %r4;
+	setp.lt.s32 	%p5, %r36, %r17;
+	@%p5 bra 	$L__BB0_6;
+
+$L__BB0_7:
+	shl.b32 	%r28, %r2, 2;
+	mov.u32 	%r29, _ZZ13reducemaxdiffE5sdata;
+	add.s32 	%r14, %r29, %r28;
+	st.shared.f32 	[%r14], %f60;
+	bar.sync 	0;
+	setp.lt.u32 	%p6, %r38, 66;
+	@%p6 bra 	$L__BB0_11;
+
+$L__BB0_8:
+	shr.u32 	%r16, %r38, 1;
+	setp.ge.u32 	%p7, %r2, %r16;
+	@%p7 bra 	$L__BB0_10;
+
+	ld.shared.f32 	%f33, [%r14];
+	shl.b32 	%r30, %r16, 2;
+	add.s32 	%r31, %r14, %r30;
+	ld.shared.f32 	%f34, [%r31];
+	max.f32 	%f35, %f33, %f34;
+	st.shared.f32 	[%r14], %f35;
+
+$L__BB0_10:
+	bar.sync 	0;
+	setp.gt.u32 	%p8, %r38, 131;
+	mov.u32 	%r38, %r16;
+	@%p8 bra 	$L__BB0_8;
+
+$L__BB0_11:
+	setp.gt.s32 	%p9, %r2, 31;
+	@%p9 bra 	$L__BB0_13;
+
+	ld.volatile.shared.f32 	%f36, [%r14];
+	ld.volatile.shared.f32 	%f37, [%r14+128];
+	max.f32 	%f38, %f36, %f37;
+	st.volatile.shared.f32 	[%r14], %f38;
+	ld.volatile.shared.f32 	%f39, [%r14+64];
+	ld.volatile.shared.f32 	%f40, [%r14];
+	max.f32 	%f41, %f40, %f39;
+	st.volatile.shared.f32 	[%r14], %f41;
+	ld.volatile.shared.f32 	%f42, [%r14+32];
+	ld.volatile.shared.f32 	%f43, [%r14];
+	max.f32 	%f44, %f43, %f42;
+	st.volatile.shared.f32 	[%r14], %f44;
+	ld.volatile.shared.f32 	%f45, [%r14+16];
+	ld.volatile.shared.f32 	%f46, [%r14];
+	max.f32 	%f47, %f46, %f45;
+	st.volatile.shared.f32 	[%r14], %f47;
+	ld.volatile.shared.f32 	%f48, [%r14+8];
+	ld.volatile.shared.f32 	%f49, [%r14];
+	max.f32 	%f50, %f49, %f48;
+	st.volatile.shared.f32 	[%r14], %f50;
+	ld.volatile.shared.f32 	%f51, [%r14+4];
+	ld.volatile.shared.f32 	%f52, [%r14];
+	max.f32 	%f53, %f52, %f51;
+	st.volatile.shared.f32 	[%r14], %f53;
+
+$L__BB0_13:
+	setp.ne.s32 	%p10, %r2, 0;
+	@%p10 bra 	$L__BB0_15;
+
+	ld.shared.f32 	%f54, [_ZZ13reducemaxdiffE5sdata];
+	abs.f32 	%f55, %f54;
+	mov.b32 	%r32, %f55;
+	cvta.to.global.u64 	%rd24, %rd11;
+	atom.global.max.s32 	%r33, [%rd24], %r32;
+
+$L__BB0_15:
+	ret;
+
+}
+
+`
+	reducemaxdiff_ptx_100 = `
+.version 8.8
+.target sm_100
+.address_size 64
+
+	// .globl	reducemaxdiff
+
+.visible .entry reducemaxdiff(
+	.param .u64 .ptr .align 1 reducemaxdiff_param_0,
+	.param .u64 .ptr .align 1 reducemaxdiff_param_1,
+	.param .u64 .ptr .align 1 reducemaxdiff_param_2,
+	.param .f32 reducemaxdiff_param_3,
+	.param .u32 reducemaxdiff_param_4
+)
+{
+	.reg .pred 	%p<12>;
+	.reg .b32 	%r<43>;
+	.reg .f32 	%f<61>;
+	.reg .b64 	%rd<20>;
+	// demoted variable
+	.shared .align 4 .b8 _ZZ13reducemaxdiffE5sdata[2048];
+	ld.param.u64 	%rd4, [reducemaxdiff_param_0];
+	ld.param.u64 	%rd5, [reducemaxdiff_param_1];
+	ld.param.u64 	%rd3, [reducemaxdiff_param_2];
+	ld.param.f32 	%f60, [reducemaxdiff_param_3];
+	ld.param.u32 	%r17, [reducemaxdiff_param_4];
+	cvta.to.global.u64 	%rd1, %rd5;
+	cvta.to.global.u64 	%rd2, %rd4;
+	mov.u32 	%r1, %tid.x;
+	mov.u32 	%r18, %ctaid.x;
+	mov.u32 	%r42, %ntid.x;
+	mad.lo.s32 	%r40, %r18, %r42, %r1;
+	mov.u32 	%r19, %nctaid.x;
+	mul.lo.s32 	%r4, %r19, %r42;
+	setp.ge.s32 	%p1, %r40, %r17;
+	@%p1 bra 	$L__BB0_7;
+	add.s32 	%r20, %r40, %r4;
+	max.s32 	%r21, %r17, %r20;
+	setp.lt.s32 	%p2, %r20, %r17;
+	selp.u32 	%r22, 1, 0, %p2;
+	add.s32 	%r23, %r20, %r22;
+	sub.s32 	%r24, %r21, %r23;
+	div.u32 	%r25, %r24, %r4;
+	add.s32 	%r5, %r25, %r22;
+	and.b32  	%r26, %r5, 3;
+	setp.eq.s32 	%p3, %r26, 3;
+	@%p3 bra 	$L__BB0_4;
+	add.s32 	%r27, %r5, 1;
+	and.b32  	%r28, %r27, 3;
+	neg.s32 	%r38, %r28;
+$L__BB0_3:
+	.pragma "nounroll";
+	mul.wide.s32 	%rd6, %r40, 4;
+	add.s64 	%rd7, %rd1, %rd6;
+	add.s64 	%rd8, %rd2, %rd6;
+	ld.global.nc.f32 	%f10, [%rd8];
+	ld.global.nc.f32 	%f11, [%rd7];
+	sub.f32 	%f12, %f10, %f11;
+	abs.f32 	%f13, %f12;
+	max.f32 	%f60, %f60, %f13;
+	add.s32 	%r40, %r40, %r4;
+	add.s32 	%r38, %r38, 1;
+	setp.ne.s32 	%p4, %r38, 0;
+	@%p4 bra 	$L__BB0_3;
+$L__BB0_4:
+	setp.lt.u32 	%p5, %r5, 3;
+	@%p5 bra 	$L__BB0_7;
+	mul.wide.s32 	%rd12, %r4, 4;
+$L__BB0_6:
+	mul.wide.s32 	%rd9, %r40, 4;
+	add.s64 	%rd10, %rd2, %rd9;
+	ld.global.nc.f32 	%f14, [%rd10];
+	add.s64 	%rd11, %rd1, %rd9;
+	ld.global.nc.f32 	%f15, [%rd11];
+	sub.f32 	%f16, %f14, %f15;
+	abs.f32 	%f17, %f16;
+	max.f32 	%f18, %f60, %f17;
+	add.s32 	%r29, %r40, %r4;
+	add.s64 	%rd13, %rd10, %rd12;
+	ld.global.nc.f32 	%f19, [%rd13];
+	add.s64 	%rd14, %rd11, %rd12;
+	ld.global.nc.f32 	%f20, [%rd14];
+	sub.f32 	%f21, %f19, %f20;
+	abs.f32 	%f22, %f21;
+	max.f32 	%f23, %f18, %f22;
+	add.s32 	%r30, %r29, %r4;
+	add.s64 	%rd15, %rd13, %rd12;
+	ld.global.nc.f32 	%f24, [%rd15];
+	add.s64 	%rd16, %rd14, %rd12;
+	ld.global.nc.f32 	%f25, [%rd16];
+	sub.f32 	%f26, %f24, %f25;
+	abs.f32 	%f27, %f26;
+	max.f32 	%f28, %f23, %f27;
+	add.s32 	%r31, %r30, %r4;
+	add.s64 	%rd17, %rd15, %rd12;
+	ld.global.nc.f32 	%f29, [%rd17];
+	add.s64 	%rd18, %rd16, %rd12;
+	ld.global.nc.f32 	%f30, [%rd18];
+	sub.f32 	%f31, %f29, %f30;
+	abs.f32 	%f32, %f31;
+	max.f32 	%f60, %f28, %f32;
+	add.s32 	%r40, %r31, %r4;
+	setp.lt.s32 	%p6, %r40, %r17;
+	@%p6 bra 	$L__BB0_6;
+$L__BB0_7:
+	shl.b32 	%r32, %r1, 2;
+	mov.u32 	%r33, _ZZ13reducemaxdiffE5sdata;
+	add.s32 	%r14, %r33, %r32;
+	st.shared.f32 	[%r14], %f60;
+	bar.sync 	0;
+	setp.lt.u32 	%p7, %r42, 66;
+	@%p7 bra 	$L__BB0_11;
+$L__BB0_8:
+	shr.u32 	%r16, %r42, 1;
+	setp.ge.u32 	%p8, %r1, %r16;
+	@%p8 bra 	$L__BB0_10;
+	ld.shared.f32 	%f33, [%r14];
+	shl.b32 	%r34, %r16, 2;
+	add.s32 	%r35, %r14, %r34;
+	ld.shared.f32 	%f34, [%r35];
+	max.f32 	%f35, %f33, %f34;
+	st.shared.f32 	[%r14], %f35;
+$L__BB0_10:
+	bar.sync 	0;
+	setp.gt.u32 	%p9, %r42, 131;
+	mov.u32 	%r42, %r16;
+	@%p9 bra 	$L__BB0_8;
+$L__BB0_11:
+	setp.gt.u32 	%p10, %r1, 31;
+	@%p10 bra 	$L__BB0_14;
+	ld.volatile.shared.f32 	%f36, [%r14];
+	ld.volatile.shared.f32 	%f37, [%r14+128];
+	max.f32 	%f38, %f36, %f37;
+	st.volatile.shared.f32 	[%r14], %f38;
+	ld.volatile.shared.f32 	%f39, [%r14];
+	ld.volatile.shared.f32 	%f40, [%r14+64];
+	max.f32 	%f41, %f39, %f40;
+	st.volatile.shared.f32 	[%r14], %f41;
+	ld.volatile.shared.f32 	%f42, [%r14];
+	ld.volatile.shared.f32 	%f43, [%r14+32];
+	max.f32 	%f44, %f42, %f43;
+	st.volatile.shared.f32 	[%r14], %f44;
+	ld.volatile.shared.f32 	%f45, [%r14];
+	ld.volatile.shared.f32 	%f46, [%r14+16];
+	max.f32 	%f47, %f45, %f46;
+	st.volatile.shared.f32 	[%r14], %f47;
+	ld.volatile.shared.f32 	%f48, [%r14];
+	ld.volatile.shared.f32 	%f49, [%r14+8];
+	max.f32 	%f50, %f48, %f49;
+	st.volatile.shared.f32 	[%r14], %f50;
+	ld.volatile.shared.f32 	%f51, [%r14];
+	ld.volatile.shared.f32 	%f52, [%r14+4];
+	max.f32 	%f53, %f51, %f52;
+	st.volatile.shared.f32 	[%r14], %f53;
+	setp.ne.s32 	%p11, %r1, 0;
+	@%p11 bra 	$L__BB0_14;
+	ld.shared.f32 	%f54, [_ZZ13reducemaxdiffE5sdata];
+	abs.f32 	%f55, %f54;
+	mov.b32 	%r36, %f55;
+	cvta.to.global.u64 	%rd19, %rd3;
+	atom.global.max.s32 	%r37, [%rd19], %r36;
+$L__BB0_14:
+	ret;
+
+}
+`
+	reducemaxdiff_ptx_120 = `
+.version 8.8
+.target sm_120
+.address_size 64
+
+	// .globl	reducemaxdiff
+
+.visible .entry reducemaxdiff(
+	.param .u64 .ptr .align 1 reducemaxdiff_param_0,
+	.param .u64 .ptr .align 1 reducemaxdiff_param_1,
+	.param .u64 .ptr .align 1 reducemaxdiff_param_2,
+	.param .f32 reducemaxdiff_param_3,
+	.param .u32 reducemaxdiff_param_4
+)
+{
+	.reg .pred 	%p<12>;
+	.reg .b32 	%r<43>;
+	.reg .f32 	%f<61>;
+	.reg .b64 	%rd<20>;
+	// demoted variable
+	.shared .align 4 .b8 _ZZ13reducemaxdiffE5sdata[2048];
+	ld.param.u64 	%rd4, [reducemaxdiff_param_0];
+	ld.param.u64 	%rd5, [reducemaxdiff_param_1];
+	ld.param.u64 	%rd3, [reducemaxdiff_param_2];
+	ld.param.f32 	%f60, [reducemaxdiff_param_3];
+	ld.param.u32 	%r17, [reducemaxdiff_param_4];
+	cvta.to.global.u64 	%rd1, %rd5;
+	cvta.to.global.u64 	%rd2, %rd4;
+	mov.u32 	%r1, %tid.x;
+	mov.u32 	%r18, %ctaid.x;
+	mov.u32 	%r42, %ntid.x;
+	mad.lo.s32 	%r40, %r18, %r42, %r1;
+	mov.u32 	%r19, %nctaid.x;
+	mul.lo.s32 	%r4, %r19, %r42;
+	setp.ge.s32 	%p1, %r40, %r17;
+	@%p1 bra 	$L__BB0_7;
+	add.s32 	%r20, %r40, %r4;
+	max.s32 	%r21, %r17, %r20;
+	setp.lt.s32 	%p2, %r20, %r17;
+	selp.u32 	%r22, 1, 0, %p2;
+	add.s32 	%r23, %r20, %r22;
+	sub.s32 	%r24, %r21, %r23;
+	div.u32 	%r25, %r24, %r4;
+	add.s32 	%r5, %r25, %r22;
+	and.b32  	%r26, %r5, 3;
+	setp.eq.s32 	%p3, %r26, 3;
+	@%p3 bra 	$L__BB0_4;
+	add.s32 	%r27, %r5, 1;
+	and.b32  	%r28, %r27, 3;
+	neg.s32 	%r38, %r28;
+$L__BB0_3:
+	.pragma "nounroll";
+	mul.wide.s32 	%rd6, %r40, 4;
+	add.s64 	%rd7, %rd1, %rd6;
+	add.s64 	%rd8, %rd2, %rd6;
+	ld.global.nc.f32 	%f10, [%rd8];
+	ld.global.nc.f32 	%f11, [%rd7];
+	sub.f32 	%f12, %f10, %f11;
+	abs.f32 	%f13, %f12;
+	max.f32 	%f60, %f60, %f13;
+	add.s32 	%r40, %r40, %r4;
+	add.s32 	%r38, %r38, 1;
+	setp.ne.s32 	%p4, %r38, 0;
+	@%p4 bra 	$L__BB0_3;
+$L__BB0_4:
+	setp.lt.u32 	%p5, %r5, 3;
+	@%p5 bra 	$L__BB0_7;
+	mul.wide.s32 	%rd12, %r4, 4;
+$L__BB0_6:
+	mul.wide.s32 	%rd9, %r40, 4;
+	add.s64 	%rd10, %rd2, %rd9;
+	ld.global.nc.f32 	%f14, [%rd10];
+	add.s64 	%rd11, %rd1, %rd9;
+	ld.global.nc.f32 	%f15, [%rd11];
+	sub.f32 	%f16, %f14, %f15;
+	abs.f32 	%f17, %f16;
+	max.f32 	%f18, %f60, %f17;
+	add.s32 	%r29, %r40, %r4;
+	add.s64 	%rd13, %rd10, %rd12;
+	ld.global.nc.f32 	%f19, [%rd13];
+	add.s64 	%rd14, %rd11, %rd12;
+	ld.global.nc.f32 	%f20, [%rd14];
+	sub.f32 	%f21, %f19, %f20;
+	abs.f32 	%f22, %f21;
+	max.f32 	%f23, %f18, %f22;
+	add.s32 	%r30, %r29, %r4;
+	add.s64 	%rd15, %rd13, %rd12;
+	ld.global.nc.f32 	%f24, [%rd15];
+	add.s64 	%rd16, %rd14, %rd12;
+	ld.global.nc.f32 	%f25, [%rd16];
+	sub.f32 	%f26, %f24, %f25;
+	abs.f32 	%f27, %f26;
+	max.f32 	%f28, %f23, %f27;
+	add.s32 	%r31, %r30, %r4;
+	add.s64 	%rd17, %rd15, %rd12;
+	ld.global.nc.f32 	%f29, [%rd17];
+	add.s64 	%rd18, %rd16, %rd12;
+	ld.global.nc.f32 	%f30, [%rd18];
+	sub.f32 	%f31, %f29, %f30;
+	abs.f32 	%f32, %f31;
+	max.f32 	%f60, %f28, %f32;
+	add.s32 	%r40, %r31, %r4;
+	setp.lt.s32 	%p6, %r40, %r17;
+	@%p6 bra 	$L__BB0_6;
+$L__BB0_7:
+	shl.b32 	%r32, %r1, 2;
+	mov.u32 	%r33, _ZZ13reducemaxdiffE5sdata;
+	add.s32 	%r14, %r33, %r32;
+	st.shared.f32 	[%r14], %f60;
+	bar.sync 	0;
+	setp.lt.u32 	%p7, %r42, 66;
+	@%p7 bra 	$L__BB0_11;
+$L__BB0_8:
+	shr.u32 	%r16, %r42, 1;
+	setp.ge.u32 	%p8, %r1, %r16;
+	@%p8 bra 	$L__BB0_10;
+	ld.shared.f32 	%f33, [%r14];
+	shl.b32 	%r34, %r16, 2;
+	add.s32 	%r35, %r14, %r34;
+	ld.shared.f32 	%f34, [%r35];
+	max.f32 	%f35, %f33, %f34;
+	st.shared.f32 	[%r14], %f35;
+$L__BB0_10:
+	bar.sync 	0;
+	setp.gt.u32 	%p9, %r42, 131;
+	mov.u32 	%r42, %r16;
+	@%p9 bra 	$L__BB0_8;
+$L__BB0_11:
+	setp.gt.u32 	%p10, %r1, 31;
+	@%p10 bra 	$L__BB0_14;
+	ld.volatile.shared.f32 	%f36, [%r14];
+	ld.volatile.shared.f32 	%f37, [%r14+128];
+	max.f32 	%f38, %f36, %f37;
+	st.volatile.shared.f32 	[%r14], %f38;
+	ld.volatile.shared.f32 	%f39, [%r14];
+	ld.volatile.shared.f32 	%f40, [%r14+64];
+	max.f32 	%f41, %f39, %f40;
+	st.volatile.shared.f32 	[%r14], %f41;
+	ld.volatile.shared.f32 	%f42, [%r14];
+	ld.volatile.shared.f32 	%f43, [%r14+32];
+	max.f32 	%f44, %f42, %f43;
+	st.volatile.shared.f32 	[%r14], %f44;
+	ld.volatile.shared.f32 	%f45, [%r14];
+	ld.volatile.shared.f32 	%f46, [%r14+16];
+	max.f32 	%f47, %f45, %f46;
+	st.volatile.shared.f32 	[%r14], %f47;
+	ld.volatile.shared.f32 	%f48, [%r14];
+	ld.volatile.shared.f32 	%f49, [%r14+8];
+	max.f32 	%f50, %f48, %f49;
+	st.volatile.shared.f32 	[%r14], %f50;
+	ld.volatile.shared.f32 	%f51, [%r14];
+	ld.volatile.shared.f32 	%f52, [%r14+4];
+	max.f32 	%f53, %f51, %f52;
+	st.volatile.shared.f32 	[%r14], %f53;
+	setp.ne.s32 	%p11, %r1, 0;
+	@%p11 bra 	$L__BB0_14;
+	ld.shared.f32 	%f54, [_ZZ13reducemaxdiffE5sdata];
+	abs.f32 	%f55, %f54;
+	mov.b32 	%r36, %f55;
+	cvta.to.global.u64 	%rd19, %rd3;
+	atom.global.max.s32 	%r37, [%rd19], %r36;
+$L__BB0_14:
+	ret;
+
+}
 `
 )

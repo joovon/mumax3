@@ -66,10 +66,14 @@ func k_zeromaskinv_async(dst unsafe.Pointer, maskLUT unsafe.Pointer, regions uns
 
 // maps compute capability on PTX code for zeromaskinv kernel.
 var zeromaskinv_map = map[int]string{0: "",
-	75: zeromaskinv_ptx_75,
-	80: zeromaskinv_ptx_80,
-	86: zeromaskinv_ptx_86,
-	89: zeromaskinv_ptx_89}
+	75:  zeromaskinv_ptx_75,
+	80:  zeromaskinv_ptx_80,
+	86:  zeromaskinv_ptx_86,
+	87:  zeromaskinv_ptx_87,
+	89:  zeromaskinv_ptx_89,
+	90:  zeromaskinv_ptx_90,
+	100: zeromaskinv_ptx_100,
+	120: zeromaskinv_ptx_120}
 
 // zeromaskinv PTX code for various compute capabilities.
 const (
@@ -253,6 +257,66 @@ $L__BB0_3:
 }
 
 `
+	zeromaskinv_ptx_87 = `
+.version 8.8
+.target sm_87
+.address_size 64
+
+	// .globl	zeromaskinv
+
+.visible .entry zeromaskinv(
+	.param .u64 zeromaskinv_param_0,
+	.param .u64 zeromaskinv_param_1,
+	.param .u64 zeromaskinv_param_2,
+	.param .u32 zeromaskinv_param_3
+)
+{
+	.reg .pred 	%p<3>;
+	.reg .b16 	%rs<2>;
+	.reg .f32 	%f<2>;
+	.reg .b32 	%r<12>;
+	.reg .b64 	%rd<13>;
+
+
+	ld.param.u64 	%rd2, [zeromaskinv_param_0];
+	ld.param.u64 	%rd3, [zeromaskinv_param_1];
+	ld.param.u64 	%rd4, [zeromaskinv_param_2];
+	ld.param.u32 	%r2, [zeromaskinv_param_3];
+	mov.u32 	%r3, %nctaid.x;
+	mov.u32 	%r4, %ctaid.y;
+	mov.u32 	%r5, %ctaid.x;
+	mad.lo.s32 	%r6, %r4, %r3, %r5;
+	mov.u32 	%r7, %ntid.x;
+	mov.u32 	%r8, %tid.x;
+	mad.lo.s32 	%r1, %r6, %r7, %r8;
+	setp.ge.s32 	%p1, %r1, %r2;
+	@%p1 bra 	$L__BB0_3;
+
+	cvta.to.global.u64 	%rd5, %rd4;
+	cvt.s64.s32 	%rd1, %r1;
+	add.s64 	%rd6, %rd5, %rd1;
+	ld.global.nc.u8 	%rs1, [%rd6];
+	cvta.to.global.u64 	%rd7, %rd3;
+	cvt.u32.u16 	%r9, %rs1;
+	and.b32  	%r10, %r9, 255;
+	mul.wide.u32 	%rd8, %r10, 4;
+	add.s64 	%rd9, %rd7, %rd8;
+	ld.global.nc.f32 	%f1, [%rd9];
+	setp.neu.f32 	%p2, %f1, 0f00000000;
+	@%p2 bra 	$L__BB0_3;
+
+	cvta.to.global.u64 	%rd10, %rd2;
+	shl.b64 	%rd11, %rd1, 2;
+	add.s64 	%rd12, %rd10, %rd11;
+	mov.u32 	%r11, 0;
+	st.global.u32 	[%rd12], %r11;
+
+$L__BB0_3:
+	ret;
+
+}
+
+`
 	zeromaskinv_ptx_89 = `
 .version 8.8
 .target sm_89
@@ -312,5 +376,173 @@ $L__BB0_3:
 
 }
 
+`
+	zeromaskinv_ptx_90 = `
+.version 8.8
+.target sm_90
+.address_size 64
+
+	// .globl	zeromaskinv
+
+.visible .entry zeromaskinv(
+	.param .u64 zeromaskinv_param_0,
+	.param .u64 zeromaskinv_param_1,
+	.param .u64 zeromaskinv_param_2,
+	.param .u32 zeromaskinv_param_3
+)
+{
+	.reg .pred 	%p<3>;
+	.reg .b16 	%rs<2>;
+	.reg .f32 	%f<2>;
+	.reg .b32 	%r<12>;
+	.reg .b64 	%rd<13>;
+
+
+	ld.param.u64 	%rd2, [zeromaskinv_param_0];
+	ld.param.u64 	%rd3, [zeromaskinv_param_1];
+	ld.param.u64 	%rd4, [zeromaskinv_param_2];
+	ld.param.u32 	%r2, [zeromaskinv_param_3];
+	mov.u32 	%r3, %nctaid.x;
+	mov.u32 	%r4, %ctaid.y;
+	mov.u32 	%r5, %ctaid.x;
+	mad.lo.s32 	%r6, %r4, %r3, %r5;
+	mov.u32 	%r7, %ntid.x;
+	mov.u32 	%r8, %tid.x;
+	mad.lo.s32 	%r1, %r6, %r7, %r8;
+	setp.ge.s32 	%p1, %r1, %r2;
+	@%p1 bra 	$L__BB0_3;
+
+	cvta.to.global.u64 	%rd5, %rd4;
+	cvt.s64.s32 	%rd1, %r1;
+	add.s64 	%rd6, %rd5, %rd1;
+	ld.global.nc.u8 	%rs1, [%rd6];
+	cvta.to.global.u64 	%rd7, %rd3;
+	cvt.u32.u16 	%r9, %rs1;
+	and.b32  	%r10, %r9, 255;
+	mul.wide.u32 	%rd8, %r10, 4;
+	add.s64 	%rd9, %rd7, %rd8;
+	ld.global.nc.f32 	%f1, [%rd9];
+	setp.neu.f32 	%p2, %f1, 0f00000000;
+	@%p2 bra 	$L__BB0_3;
+
+	cvta.to.global.u64 	%rd10, %rd2;
+	shl.b64 	%rd11, %rd1, 2;
+	add.s64 	%rd12, %rd10, %rd11;
+	mov.u32 	%r11, 0;
+	st.global.u32 	[%rd12], %r11;
+
+$L__BB0_3:
+	ret;
+
+}
+
+`
+	zeromaskinv_ptx_100 = `
+.version 8.8
+.target sm_100
+.address_size 64
+
+	// .globl	zeromaskinv
+
+.visible .entry zeromaskinv(
+	.param .u64 .ptr .align 1 zeromaskinv_param_0,
+	.param .u64 .ptr .align 1 zeromaskinv_param_1,
+	.param .u64 .ptr .align 1 zeromaskinv_param_2,
+	.param .u32 zeromaskinv_param_3
+)
+{
+	.reg .pred 	%p<3>;
+	.reg .b16 	%rs<2>;
+	.reg .b32 	%r<11>;
+	.reg .f32 	%f<2>;
+	.reg .b64 	%rd<13>;
+
+	ld.param.u64 	%rd2, [zeromaskinv_param_0];
+	ld.param.u64 	%rd3, [zeromaskinv_param_1];
+	ld.param.u64 	%rd4, [zeromaskinv_param_2];
+	ld.param.u32 	%r2, [zeromaskinv_param_3];
+	mov.u32 	%r3, %ctaid.y;
+	mov.u32 	%r4, %nctaid.x;
+	mov.u32 	%r5, %ctaid.x;
+	mad.lo.s32 	%r6, %r3, %r4, %r5;
+	mov.u32 	%r7, %ntid.x;
+	mov.u32 	%r8, %tid.x;
+	mad.lo.s32 	%r1, %r6, %r7, %r8;
+	setp.ge.s32 	%p1, %r1, %r2;
+	@%p1 bra 	$L__BB0_3;
+	cvta.to.global.u64 	%rd5, %rd4;
+	cvta.to.global.u64 	%rd6, %rd3;
+	cvt.s64.s32 	%rd1, %r1;
+	add.s64 	%rd7, %rd5, %rd1;
+	ld.global.nc.u8 	%rs1, [%rd7];
+	cvt.u32.u8 	%r9, %rs1;
+	mul.wide.u32 	%rd8, %r9, 4;
+	add.s64 	%rd9, %rd6, %rd8;
+	ld.global.nc.f32 	%f1, [%rd9];
+	setp.neu.f32 	%p2, %f1, 0f00000000;
+	@%p2 bra 	$L__BB0_3;
+	cvta.to.global.u64 	%rd10, %rd2;
+	shl.b64 	%rd11, %rd1, 2;
+	add.s64 	%rd12, %rd10, %rd11;
+	mov.b32 	%r10, 0;
+	st.global.u32 	[%rd12], %r10;
+$L__BB0_3:
+	ret;
+
+}
+`
+	zeromaskinv_ptx_120 = `
+.version 8.8
+.target sm_120
+.address_size 64
+
+	// .globl	zeromaskinv
+
+.visible .entry zeromaskinv(
+	.param .u64 .ptr .align 1 zeromaskinv_param_0,
+	.param .u64 .ptr .align 1 zeromaskinv_param_1,
+	.param .u64 .ptr .align 1 zeromaskinv_param_2,
+	.param .u32 zeromaskinv_param_3
+)
+{
+	.reg .pred 	%p<3>;
+	.reg .b16 	%rs<2>;
+	.reg .b32 	%r<11>;
+	.reg .f32 	%f<2>;
+	.reg .b64 	%rd<13>;
+
+	ld.param.u64 	%rd2, [zeromaskinv_param_0];
+	ld.param.u64 	%rd3, [zeromaskinv_param_1];
+	ld.param.u64 	%rd4, [zeromaskinv_param_2];
+	ld.param.u32 	%r2, [zeromaskinv_param_3];
+	mov.u32 	%r3, %ctaid.y;
+	mov.u32 	%r4, %nctaid.x;
+	mov.u32 	%r5, %ctaid.x;
+	mad.lo.s32 	%r6, %r3, %r4, %r5;
+	mov.u32 	%r7, %ntid.x;
+	mov.u32 	%r8, %tid.x;
+	mad.lo.s32 	%r1, %r6, %r7, %r8;
+	setp.ge.s32 	%p1, %r1, %r2;
+	@%p1 bra 	$L__BB0_3;
+	cvta.to.global.u64 	%rd5, %rd4;
+	cvta.to.global.u64 	%rd6, %rd3;
+	cvt.s64.s32 	%rd1, %r1;
+	add.s64 	%rd7, %rd5, %rd1;
+	ld.global.nc.u8 	%rs1, [%rd7];
+	cvt.u32.u8 	%r9, %rs1;
+	mul.wide.u32 	%rd8, %r9, 4;
+	add.s64 	%rd9, %rd6, %rd8;
+	ld.global.nc.f32 	%f1, [%rd9];
+	setp.neu.f32 	%p2, %f1, 0f00000000;
+	@%p2 bra 	$L__BB0_3;
+	cvta.to.global.u64 	%rd10, %rd2;
+	shl.b64 	%rd11, %rd1, 2;
+	add.s64 	%rd12, %rd10, %rd11;
+	mov.b32 	%r10, 0;
+	st.global.u32 	[%rd12], %r10;
+$L__BB0_3:
+	ret;
+
+}
 `
 )

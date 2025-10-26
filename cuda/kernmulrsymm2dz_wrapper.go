@@ -66,10 +66,14 @@ func k_kernmulRSymm2Dz_async(fftMz unsafe.Pointer, fftKzz unsafe.Pointer, Nx int
 
 // maps compute capability on PTX code for kernmulRSymm2Dz kernel.
 var kernmulRSymm2Dz_map = map[int]string{0: "",
-	75: kernmulRSymm2Dz_ptx_75,
-	80: kernmulRSymm2Dz_ptx_80,
-	86: kernmulRSymm2Dz_ptx_86,
-	89: kernmulRSymm2Dz_ptx_89}
+	75:  kernmulRSymm2Dz_ptx_75,
+	80:  kernmulRSymm2Dz_ptx_80,
+	86:  kernmulRSymm2Dz_ptx_86,
+	87:  kernmulRSymm2Dz_ptx_87,
+	89:  kernmulRSymm2Dz_ptx_89,
+	90:  kernmulRSymm2Dz_ptx_90,
+	100: kernmulRSymm2Dz_ptx_100,
+	120: kernmulRSymm2Dz_ptx_120}
 
 // kernmulRSymm2Dz PTX code for various compute capabilities.
 const (
@@ -271,6 +275,72 @@ $L__BB0_2:
 }
 
 `
+	kernmulRSymm2Dz_ptx_87 = `
+.version 8.8
+.target sm_87
+.address_size 64
+
+	// .globl	kernmulRSymm2Dz
+
+.visible .entry kernmulRSymm2Dz(
+	.param .u64 kernmulRSymm2Dz_param_0,
+	.param .u64 kernmulRSymm2Dz_param_1,
+	.param .u32 kernmulRSymm2Dz_param_2,
+	.param .u32 kernmulRSymm2Dz_param_3
+)
+{
+	.reg .pred 	%p<5>;
+	.reg .f32 	%f<6>;
+	.reg .b32 	%r<19>;
+	.reg .b64 	%rd<9>;
+
+
+	ld.param.u64 	%rd1, [kernmulRSymm2Dz_param_0];
+	ld.param.u64 	%rd2, [kernmulRSymm2Dz_param_1];
+	ld.param.u32 	%r3, [kernmulRSymm2Dz_param_2];
+	ld.param.u32 	%r4, [kernmulRSymm2Dz_param_3];
+	mov.u32 	%r5, %ntid.x;
+	mov.u32 	%r6, %ctaid.x;
+	mov.u32 	%r7, %tid.x;
+	mad.lo.s32 	%r1, %r6, %r5, %r7;
+	mov.u32 	%r8, %ntid.y;
+	mov.u32 	%r9, %ctaid.y;
+	mov.u32 	%r10, %tid.y;
+	mad.lo.s32 	%r2, %r9, %r8, %r10;
+	setp.ge.s32 	%p1, %r1, %r3;
+	setp.ge.s32 	%p2, %r2, %r4;
+	or.pred  	%p3, %p1, %p2;
+	@%p3 bra 	$L__BB0_2;
+
+	cvta.to.global.u64 	%rd3, %rd2;
+	mad.lo.s32 	%r11, %r2, %r3, %r1;
+	shl.b32 	%r12, %r11, 1;
+	cvta.to.global.u64 	%rd4, %rd1;
+	mul.wide.s32 	%rd5, %r12, 4;
+	add.s64 	%rd6, %rd4, %rd5;
+	ld.global.f32 	%f1, [%rd6+4];
+	shr.u32 	%r13, %r4, 31;
+	add.s32 	%r14, %r4, %r13;
+	shr.s32 	%r15, %r14, 1;
+	setp.gt.s32 	%p4, %r2, %r15;
+	sub.s32 	%r16, %r4, %r2;
+	selp.b32 	%r17, %r16, %r2, %p4;
+	mad.lo.s32 	%r18, %r17, %r3, %r1;
+	mul.wide.s32 	%rd7, %r18, 4;
+	add.s64 	%rd8, %rd3, %rd7;
+	ld.global.nc.f32 	%f2, [%rd8];
+	ld.global.f32 	%f3, [%rd6];
+	mul.f32 	%f4, %f3, %f2;
+	st.global.f32 	[%rd6], %f4;
+	mul.f32 	%f5, %f1, %f2;
+	st.global.f32 	[%rd6+4], %f5;
+
+$L__BB0_2:
+	ret;
+
+}
+
+`
 	kernmulRSymm2Dz_ptx_89 = `
 .version 8.8
 .target sm_89
@@ -336,5 +406,191 @@ $L__BB0_2:
 
 }
 
+`
+	kernmulRSymm2Dz_ptx_90 = `
+.version 8.8
+.target sm_90
+.address_size 64
+
+	// .globl	kernmulRSymm2Dz
+
+.visible .entry kernmulRSymm2Dz(
+	.param .u64 kernmulRSymm2Dz_param_0,
+	.param .u64 kernmulRSymm2Dz_param_1,
+	.param .u32 kernmulRSymm2Dz_param_2,
+	.param .u32 kernmulRSymm2Dz_param_3
+)
+{
+	.reg .pred 	%p<5>;
+	.reg .f32 	%f<6>;
+	.reg .b32 	%r<19>;
+	.reg .b64 	%rd<9>;
+
+
+	ld.param.u64 	%rd1, [kernmulRSymm2Dz_param_0];
+	ld.param.u64 	%rd2, [kernmulRSymm2Dz_param_1];
+	ld.param.u32 	%r3, [kernmulRSymm2Dz_param_2];
+	ld.param.u32 	%r4, [kernmulRSymm2Dz_param_3];
+	mov.u32 	%r5, %ntid.x;
+	mov.u32 	%r6, %ctaid.x;
+	mov.u32 	%r7, %tid.x;
+	mad.lo.s32 	%r1, %r6, %r5, %r7;
+	mov.u32 	%r8, %ntid.y;
+	mov.u32 	%r9, %ctaid.y;
+	mov.u32 	%r10, %tid.y;
+	mad.lo.s32 	%r2, %r9, %r8, %r10;
+	setp.ge.s32 	%p1, %r1, %r3;
+	setp.ge.s32 	%p2, %r2, %r4;
+	or.pred  	%p3, %p1, %p2;
+	@%p3 bra 	$L__BB0_2;
+
+	cvta.to.global.u64 	%rd3, %rd2;
+	mad.lo.s32 	%r11, %r2, %r3, %r1;
+	shl.b32 	%r12, %r11, 1;
+	cvta.to.global.u64 	%rd4, %rd1;
+	mul.wide.s32 	%rd5, %r12, 4;
+	add.s64 	%rd6, %rd4, %rd5;
+	ld.global.f32 	%f1, [%rd6+4];
+	shr.u32 	%r13, %r4, 31;
+	add.s32 	%r14, %r4, %r13;
+	shr.s32 	%r15, %r14, 1;
+	setp.gt.s32 	%p4, %r2, %r15;
+	sub.s32 	%r16, %r4, %r2;
+	selp.b32 	%r17, %r16, %r2, %p4;
+	mad.lo.s32 	%r18, %r17, %r3, %r1;
+	mul.wide.s32 	%rd7, %r18, 4;
+	add.s64 	%rd8, %rd3, %rd7;
+	ld.global.nc.f32 	%f2, [%rd8];
+	ld.global.f32 	%f3, [%rd6];
+	mul.f32 	%f4, %f3, %f2;
+	st.global.f32 	[%rd6], %f4;
+	mul.f32 	%f5, %f1, %f2;
+	st.global.f32 	[%rd6+4], %f5;
+
+$L__BB0_2:
+	ret;
+
+}
+
+`
+	kernmulRSymm2Dz_ptx_100 = `
+.version 8.8
+.target sm_100
+.address_size 64
+
+	// .globl	kernmulRSymm2Dz
+
+.visible .entry kernmulRSymm2Dz(
+	.param .u64 .ptr .align 1 kernmulRSymm2Dz_param_0,
+	.param .u64 .ptr .align 1 kernmulRSymm2Dz_param_1,
+	.param .u32 kernmulRSymm2Dz_param_2,
+	.param .u32 kernmulRSymm2Dz_param_3
+)
+{
+	.reg .pred 	%p<5>;
+	.reg .b32 	%r<19>;
+	.reg .f32 	%f<6>;
+	.reg .b64 	%rd<9>;
+
+	ld.param.u64 	%rd1, [kernmulRSymm2Dz_param_0];
+	ld.param.u64 	%rd2, [kernmulRSymm2Dz_param_1];
+	ld.param.u32 	%r3, [kernmulRSymm2Dz_param_2];
+	ld.param.u32 	%r5, [kernmulRSymm2Dz_param_3];
+	mov.u32 	%r6, %ctaid.x;
+	mov.u32 	%r7, %ntid.x;
+	mov.u32 	%r8, %tid.x;
+	mad.lo.s32 	%r1, %r6, %r7, %r8;
+	mov.u32 	%r9, %ctaid.y;
+	mov.u32 	%r10, %ntid.y;
+	mov.u32 	%r11, %tid.y;
+	mad.lo.s32 	%r12, %r9, %r10, %r11;
+	setp.ge.s32 	%p1, %r1, %r3;
+	setp.le.s32 	%p2, %r5, %r12;
+	or.pred  	%p3, %p1, %p2;
+	@%p3 bra 	$L__BB0_2;
+	cvta.to.global.u64 	%rd3, %rd1;
+	cvta.to.global.u64 	%rd4, %rd2;
+	mad.lo.s32 	%r13, %r3, %r12, %r1;
+	add.s32 	%r14, %r13, %r13;
+	mul.wide.s32 	%rd5, %r14, 4;
+	add.s64 	%rd6, %rd3, %rd5;
+	ld.global.f32 	%f1, [%rd6];
+	ld.global.f32 	%f2, [%rd6+4];
+	shr.u32 	%r15, %r5, 1;
+	setp.gt.u32 	%p4, %r12, %r15;
+	sub.s32 	%r16, %r5, %r12;
+	selp.b32 	%r17, %r16, %r12, %p4;
+	mad.lo.s32 	%r18, %r17, %r3, %r1;
+	mul.wide.s32 	%rd7, %r18, 4;
+	add.s64 	%rd8, %rd4, %rd7;
+	ld.global.nc.f32 	%f3, [%rd8];
+	mul.f32 	%f4, %f1, %f3;
+	st.global.f32 	[%rd6], %f4;
+	mul.f32 	%f5, %f2, %f3;
+	st.global.f32 	[%rd6+4], %f5;
+$L__BB0_2:
+	ret;
+
+}
+`
+	kernmulRSymm2Dz_ptx_120 = `
+.version 8.8
+.target sm_120
+.address_size 64
+
+	// .globl	kernmulRSymm2Dz
+
+.visible .entry kernmulRSymm2Dz(
+	.param .u64 .ptr .align 1 kernmulRSymm2Dz_param_0,
+	.param .u64 .ptr .align 1 kernmulRSymm2Dz_param_1,
+	.param .u32 kernmulRSymm2Dz_param_2,
+	.param .u32 kernmulRSymm2Dz_param_3
+)
+{
+	.reg .pred 	%p<5>;
+	.reg .b32 	%r<19>;
+	.reg .f32 	%f<6>;
+	.reg .b64 	%rd<9>;
+
+	ld.param.u64 	%rd1, [kernmulRSymm2Dz_param_0];
+	ld.param.u64 	%rd2, [kernmulRSymm2Dz_param_1];
+	ld.param.u32 	%r3, [kernmulRSymm2Dz_param_2];
+	ld.param.u32 	%r5, [kernmulRSymm2Dz_param_3];
+	mov.u32 	%r6, %ctaid.x;
+	mov.u32 	%r7, %ntid.x;
+	mov.u32 	%r8, %tid.x;
+	mad.lo.s32 	%r1, %r6, %r7, %r8;
+	mov.u32 	%r9, %ctaid.y;
+	mov.u32 	%r10, %ntid.y;
+	mov.u32 	%r11, %tid.y;
+	mad.lo.s32 	%r12, %r9, %r10, %r11;
+	setp.ge.s32 	%p1, %r1, %r3;
+	setp.le.s32 	%p2, %r5, %r12;
+	or.pred  	%p3, %p1, %p2;
+	@%p3 bra 	$L__BB0_2;
+	cvta.to.global.u64 	%rd3, %rd1;
+	cvta.to.global.u64 	%rd4, %rd2;
+	mad.lo.s32 	%r13, %r3, %r12, %r1;
+	add.s32 	%r14, %r13, %r13;
+	mul.wide.s32 	%rd5, %r14, 4;
+	add.s64 	%rd6, %rd3, %rd5;
+	ld.global.f32 	%f1, [%rd6];
+	ld.global.f32 	%f2, [%rd6+4];
+	shr.u32 	%r15, %r5, 1;
+	setp.gt.u32 	%p4, %r12, %r15;
+	sub.s32 	%r16, %r5, %r12;
+	selp.b32 	%r17, %r16, %r12, %p4;
+	mad.lo.s32 	%r18, %r17, %r3, %r1;
+	mul.wide.s32 	%rd7, %r18, 4;
+	add.s64 	%rd8, %rd4, %rd7;
+	ld.global.nc.f32 	%f3, [%rd8];
+	mul.f32 	%f4, %f1, %f3;
+	st.global.f32 	[%rd6], %f4;
+	mul.f32 	%f5, %f2, %f3;
+	st.global.f32 	[%rd6+4], %f5;
+$L__BB0_2:
+	ret;
+
+}
 `
 )

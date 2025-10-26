@@ -66,10 +66,14 @@ func k_pointwise_div_async(dst unsafe.Pointer, a unsafe.Pointer, b unsafe.Pointe
 
 // maps compute capability on PTX code for pointwise_div kernel.
 var pointwise_div_map = map[int]string{0: "",
-	75: pointwise_div_ptx_75,
-	80: pointwise_div_ptx_80,
-	86: pointwise_div_ptx_86,
-	89: pointwise_div_ptx_89}
+	75:  pointwise_div_ptx_75,
+	80:  pointwise_div_ptx_80,
+	86:  pointwise_div_ptx_86,
+	87:  pointwise_div_ptx_87,
+	89:  pointwise_div_ptx_89,
+	90:  pointwise_div_ptx_90,
+	100: pointwise_div_ptx_100,
+	120: pointwise_div_ptx_120}
 
 // pointwise_div PTX code for various compute capabilities.
 const (
@@ -265,6 +269,70 @@ $L__BB0_4:
 }
 
 `
+	pointwise_div_ptx_87 = `
+.version 8.8
+.target sm_87
+.address_size 64
+
+	// .globl	pointwise_div
+
+.visible .entry pointwise_div(
+	.param .u64 pointwise_div_param_0,
+	.param .u64 pointwise_div_param_1,
+	.param .u64 pointwise_div_param_2,
+	.param .u32 pointwise_div_param_3
+)
+{
+	.reg .pred 	%p<3>;
+	.reg .f32 	%f<4>;
+	.reg .b32 	%r<10>;
+	.reg .b64 	%rd<13>;
+
+
+	ld.param.u64 	%rd3, [pointwise_div_param_0];
+	ld.param.u64 	%rd4, [pointwise_div_param_1];
+	ld.param.u64 	%rd5, [pointwise_div_param_2];
+	ld.param.u32 	%r2, [pointwise_div_param_3];
+	mov.u32 	%r3, %nctaid.x;
+	mov.u32 	%r4, %ctaid.y;
+	mov.u32 	%r5, %ctaid.x;
+	mad.lo.s32 	%r6, %r4, %r3, %r5;
+	mov.u32 	%r7, %ntid.x;
+	mov.u32 	%r8, %tid.x;
+	mad.lo.s32 	%r1, %r6, %r7, %r8;
+	setp.ge.s32 	%p1, %r1, %r2;
+	@%p1 bra 	$L__BB0_4;
+
+	cvta.to.global.u64 	%rd6, %rd5;
+	cvt.s64.s32 	%rd1, %r1;
+	mul.wide.s32 	%rd7, %r1, 4;
+	add.s64 	%rd8, %rd6, %rd7;
+	ld.global.nc.f32 	%f1, [%rd8];
+	setp.neu.f32 	%p2, %f1, 0f00000000;
+	cvta.to.global.u64 	%rd9, %rd3;
+	add.s64 	%rd2, %rd9, %rd7;
+	@%p2 bra 	$L__BB0_3;
+	bra.uni 	$L__BB0_2;
+
+$L__BB0_3:
+	cvta.to.global.u64 	%rd10, %rd4;
+	shl.b64 	%rd11, %rd1, 2;
+	add.s64 	%rd12, %rd10, %rd11;
+	ld.global.nc.f32 	%f2, [%rd12];
+	div.rn.f32 	%f3, %f2, %f1;
+	st.global.f32 	[%rd2], %f3;
+	bra.uni 	$L__BB0_4;
+
+$L__BB0_2:
+	mov.u32 	%r9, 0;
+	st.global.u32 	[%rd2], %r9;
+
+$L__BB0_4:
+	ret;
+
+}
+
+`
 	pointwise_div_ptx_89 = `
 .version 8.8
 .target sm_89
@@ -328,5 +396,185 @@ $L__BB0_4:
 
 }
 
+`
+	pointwise_div_ptx_90 = `
+.version 8.8
+.target sm_90
+.address_size 64
+
+	// .globl	pointwise_div
+
+.visible .entry pointwise_div(
+	.param .u64 pointwise_div_param_0,
+	.param .u64 pointwise_div_param_1,
+	.param .u64 pointwise_div_param_2,
+	.param .u32 pointwise_div_param_3
+)
+{
+	.reg .pred 	%p<3>;
+	.reg .f32 	%f<4>;
+	.reg .b32 	%r<10>;
+	.reg .b64 	%rd<13>;
+
+
+	ld.param.u64 	%rd3, [pointwise_div_param_0];
+	ld.param.u64 	%rd4, [pointwise_div_param_1];
+	ld.param.u64 	%rd5, [pointwise_div_param_2];
+	ld.param.u32 	%r2, [pointwise_div_param_3];
+	mov.u32 	%r3, %nctaid.x;
+	mov.u32 	%r4, %ctaid.y;
+	mov.u32 	%r5, %ctaid.x;
+	mad.lo.s32 	%r6, %r4, %r3, %r5;
+	mov.u32 	%r7, %ntid.x;
+	mov.u32 	%r8, %tid.x;
+	mad.lo.s32 	%r1, %r6, %r7, %r8;
+	setp.ge.s32 	%p1, %r1, %r2;
+	@%p1 bra 	$L__BB0_4;
+
+	cvta.to.global.u64 	%rd6, %rd5;
+	cvt.s64.s32 	%rd1, %r1;
+	mul.wide.s32 	%rd7, %r1, 4;
+	add.s64 	%rd8, %rd6, %rd7;
+	ld.global.nc.f32 	%f1, [%rd8];
+	setp.neu.f32 	%p2, %f1, 0f00000000;
+	cvta.to.global.u64 	%rd9, %rd3;
+	add.s64 	%rd2, %rd9, %rd7;
+	@%p2 bra 	$L__BB0_3;
+	bra.uni 	$L__BB0_2;
+
+$L__BB0_3:
+	cvta.to.global.u64 	%rd10, %rd4;
+	shl.b64 	%rd11, %rd1, 2;
+	add.s64 	%rd12, %rd10, %rd11;
+	ld.global.nc.f32 	%f2, [%rd12];
+	div.rn.f32 	%f3, %f2, %f1;
+	st.global.f32 	[%rd2], %f3;
+	bra.uni 	$L__BB0_4;
+
+$L__BB0_2:
+	mov.u32 	%r9, 0;
+	st.global.u32 	[%rd2], %r9;
+
+$L__BB0_4:
+	ret;
+
+}
+
+`
+	pointwise_div_ptx_100 = `
+.version 8.8
+.target sm_100
+.address_size 64
+
+	// .globl	pointwise_div
+
+.visible .entry pointwise_div(
+	.param .u64 .ptr .align 1 pointwise_div_param_0,
+	.param .u64 .ptr .align 1 pointwise_div_param_1,
+	.param .u64 .ptr .align 1 pointwise_div_param_2,
+	.param .u32 pointwise_div_param_3
+)
+{
+	.reg .pred 	%p<3>;
+	.reg .b32 	%r<10>;
+	.reg .f32 	%f<4>;
+	.reg .b64 	%rd<15>;
+
+	ld.param.u64 	%rd5, [pointwise_div_param_0];
+	ld.param.u64 	%rd3, [pointwise_div_param_1];
+	ld.param.u64 	%rd4, [pointwise_div_param_2];
+	ld.param.u32 	%r2, [pointwise_div_param_3];
+	cvta.to.global.u64 	%rd1, %rd5;
+	mov.u32 	%r3, %ctaid.y;
+	mov.u32 	%r4, %nctaid.x;
+	mov.u32 	%r5, %ctaid.x;
+	mad.lo.s32 	%r6, %r3, %r4, %r5;
+	mov.u32 	%r7, %ntid.x;
+	mov.u32 	%r8, %tid.x;
+	mad.lo.s32 	%r1, %r6, %r7, %r8;
+	setp.ge.s32 	%p1, %r1, %r2;
+	@%p1 bra 	$L__BB0_4;
+	cvta.to.global.u64 	%rd6, %rd4;
+	cvt.s64.s32 	%rd2, %r1;
+	mul.wide.s32 	%rd7, %r1, 4;
+	add.s64 	%rd8, %rd6, %rd7;
+	ld.global.nc.f32 	%f1, [%rd8];
+	setp.eq.f32 	%p2, %f1, 0f00000000;
+	@%p2 bra 	$L__BB0_3;
+	cvta.to.global.u64 	%rd11, %rd3;
+	shl.b64 	%rd12, %rd2, 2;
+	add.s64 	%rd13, %rd11, %rd12;
+	ld.global.nc.f32 	%f2, [%rd13];
+	div.rn.f32 	%f3, %f2, %f1;
+	add.s64 	%rd14, %rd1, %rd12;
+	st.global.f32 	[%rd14], %f3;
+	bra.uni 	$L__BB0_4;
+$L__BB0_3:
+	shl.b64 	%rd9, %rd2, 2;
+	add.s64 	%rd10, %rd1, %rd9;
+	mov.b32 	%r9, 0;
+	st.global.u32 	[%rd10], %r9;
+$L__BB0_4:
+	ret;
+
+}
+`
+	pointwise_div_ptx_120 = `
+.version 8.8
+.target sm_120
+.address_size 64
+
+	// .globl	pointwise_div
+
+.visible .entry pointwise_div(
+	.param .u64 .ptr .align 1 pointwise_div_param_0,
+	.param .u64 .ptr .align 1 pointwise_div_param_1,
+	.param .u64 .ptr .align 1 pointwise_div_param_2,
+	.param .u32 pointwise_div_param_3
+)
+{
+	.reg .pred 	%p<3>;
+	.reg .b32 	%r<10>;
+	.reg .f32 	%f<4>;
+	.reg .b64 	%rd<15>;
+
+	ld.param.u64 	%rd5, [pointwise_div_param_0];
+	ld.param.u64 	%rd3, [pointwise_div_param_1];
+	ld.param.u64 	%rd4, [pointwise_div_param_2];
+	ld.param.u32 	%r2, [pointwise_div_param_3];
+	cvta.to.global.u64 	%rd1, %rd5;
+	mov.u32 	%r3, %ctaid.y;
+	mov.u32 	%r4, %nctaid.x;
+	mov.u32 	%r5, %ctaid.x;
+	mad.lo.s32 	%r6, %r3, %r4, %r5;
+	mov.u32 	%r7, %ntid.x;
+	mov.u32 	%r8, %tid.x;
+	mad.lo.s32 	%r1, %r6, %r7, %r8;
+	setp.ge.s32 	%p1, %r1, %r2;
+	@%p1 bra 	$L__BB0_4;
+	cvta.to.global.u64 	%rd6, %rd4;
+	cvt.s64.s32 	%rd2, %r1;
+	mul.wide.s32 	%rd7, %r1, 4;
+	add.s64 	%rd8, %rd6, %rd7;
+	ld.global.nc.f32 	%f1, [%rd8];
+	setp.eq.f32 	%p2, %f1, 0f00000000;
+	@%p2 bra 	$L__BB0_3;
+	cvta.to.global.u64 	%rd11, %rd3;
+	shl.b64 	%rd12, %rd2, 2;
+	add.s64 	%rd13, %rd11, %rd12;
+	ld.global.nc.f32 	%f2, [%rd13];
+	div.rn.f32 	%f3, %f2, %f1;
+	add.s64 	%rd14, %rd1, %rd12;
+	st.global.f32 	[%rd14], %f3;
+	bra.uni 	$L__BB0_4;
+$L__BB0_3:
+	shl.b64 	%rd9, %rd2, 2;
+	add.s64 	%rd10, %rd1, %rd9;
+	mov.b32 	%r9, 0;
+	st.global.u32 	[%rd10], %r9;
+$L__BB0_4:
+	ret;
+
+}
 `
 )

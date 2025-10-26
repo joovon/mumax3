@@ -66,10 +66,14 @@ func k_regiondecode_async(dst unsafe.Pointer, LUT unsafe.Pointer, regions unsafe
 
 // maps compute capability on PTX code for regiondecode kernel.
 var regiondecode_map = map[int]string{0: "",
-	75: regiondecode_ptx_75,
-	80: regiondecode_ptx_80,
-	86: regiondecode_ptx_86,
-	89: regiondecode_ptx_89}
+	75:  regiondecode_ptx_75,
+	80:  regiondecode_ptx_80,
+	86:  regiondecode_ptx_86,
+	87:  regiondecode_ptx_87,
+	89:  regiondecode_ptx_89,
+	90:  regiondecode_ptx_90,
+	100: regiondecode_ptx_100,
+	120: regiondecode_ptx_120}
 
 // regiondecode PTX code for various compute capabilities.
 const (
@@ -241,6 +245,62 @@ $L__BB0_2:
 }
 
 `
+	regiondecode_ptx_87 = `
+.version 8.8
+.target sm_87
+.address_size 64
+
+	// .globl	regiondecode
+
+.visible .entry regiondecode(
+	.param .u64 regiondecode_param_0,
+	.param .u64 regiondecode_param_1,
+	.param .u64 regiondecode_param_2,
+	.param .u32 regiondecode_param_3
+)
+{
+	.reg .pred 	%p<2>;
+	.reg .b16 	%rs<2>;
+	.reg .f32 	%f<2>;
+	.reg .b32 	%r<11>;
+	.reg .b64 	%rd<13>;
+
+
+	ld.param.u64 	%rd1, [regiondecode_param_0];
+	ld.param.u64 	%rd2, [regiondecode_param_1];
+	ld.param.u64 	%rd3, [regiondecode_param_2];
+	ld.param.u32 	%r2, [regiondecode_param_3];
+	mov.u32 	%r3, %ctaid.y;
+	mov.u32 	%r4, %nctaid.x;
+	mov.u32 	%r5, %ctaid.x;
+	mad.lo.s32 	%r6, %r3, %r4, %r5;
+	mov.u32 	%r7, %ntid.x;
+	mov.u32 	%r8, %tid.x;
+	mad.lo.s32 	%r1, %r6, %r7, %r8;
+	setp.ge.s32 	%p1, %r1, %r2;
+	@%p1 bra 	$L__BB0_2;
+
+	cvta.to.global.u64 	%rd4, %rd3;
+	cvt.s64.s32 	%rd5, %r1;
+	add.s64 	%rd6, %rd4, %rd5;
+	ld.global.nc.u8 	%rs1, [%rd6];
+	cvta.to.global.u64 	%rd7, %rd2;
+	cvt.u32.u16 	%r9, %rs1;
+	and.b32  	%r10, %r9, 255;
+	mul.wide.u32 	%rd8, %r10, 4;
+	add.s64 	%rd9, %rd7, %rd8;
+	ld.global.nc.f32 	%f1, [%rd9];
+	cvta.to.global.u64 	%rd10, %rd1;
+	mul.wide.s32 	%rd11, %r1, 4;
+	add.s64 	%rd12, %rd10, %rd11;
+	st.global.f32 	[%rd12], %f1;
+
+$L__BB0_2:
+	ret;
+
+}
+
+`
 	regiondecode_ptx_89 = `
 .version 8.8
 .target sm_89
@@ -296,5 +356,163 @@ $L__BB0_2:
 
 }
 
+`
+	regiondecode_ptx_90 = `
+.version 8.8
+.target sm_90
+.address_size 64
+
+	// .globl	regiondecode
+
+.visible .entry regiondecode(
+	.param .u64 regiondecode_param_0,
+	.param .u64 regiondecode_param_1,
+	.param .u64 regiondecode_param_2,
+	.param .u32 regiondecode_param_3
+)
+{
+	.reg .pred 	%p<2>;
+	.reg .b16 	%rs<2>;
+	.reg .f32 	%f<2>;
+	.reg .b32 	%r<11>;
+	.reg .b64 	%rd<13>;
+
+
+	ld.param.u64 	%rd1, [regiondecode_param_0];
+	ld.param.u64 	%rd2, [regiondecode_param_1];
+	ld.param.u64 	%rd3, [regiondecode_param_2];
+	ld.param.u32 	%r2, [regiondecode_param_3];
+	mov.u32 	%r3, %ctaid.y;
+	mov.u32 	%r4, %nctaid.x;
+	mov.u32 	%r5, %ctaid.x;
+	mad.lo.s32 	%r6, %r3, %r4, %r5;
+	mov.u32 	%r7, %ntid.x;
+	mov.u32 	%r8, %tid.x;
+	mad.lo.s32 	%r1, %r6, %r7, %r8;
+	setp.ge.s32 	%p1, %r1, %r2;
+	@%p1 bra 	$L__BB0_2;
+
+	cvta.to.global.u64 	%rd4, %rd3;
+	cvt.s64.s32 	%rd5, %r1;
+	add.s64 	%rd6, %rd4, %rd5;
+	ld.global.nc.u8 	%rs1, [%rd6];
+	cvta.to.global.u64 	%rd7, %rd2;
+	cvt.u32.u16 	%r9, %rs1;
+	and.b32  	%r10, %r9, 255;
+	mul.wide.u32 	%rd8, %r10, 4;
+	add.s64 	%rd9, %rd7, %rd8;
+	ld.global.nc.f32 	%f1, [%rd9];
+	cvta.to.global.u64 	%rd10, %rd1;
+	mul.wide.s32 	%rd11, %r1, 4;
+	add.s64 	%rd12, %rd10, %rd11;
+	st.global.f32 	[%rd12], %f1;
+
+$L__BB0_2:
+	ret;
+
+}
+
+`
+	regiondecode_ptx_100 = `
+.version 8.8
+.target sm_100
+.address_size 64
+
+	// .globl	regiondecode
+
+.visible .entry regiondecode(
+	.param .u64 .ptr .align 1 regiondecode_param_0,
+	.param .u64 .ptr .align 1 regiondecode_param_1,
+	.param .u64 .ptr .align 1 regiondecode_param_2,
+	.param .u32 regiondecode_param_3
+)
+{
+	.reg .pred 	%p<2>;
+	.reg .b16 	%rs<2>;
+	.reg .b32 	%r<10>;
+	.reg .f32 	%f<2>;
+	.reg .b64 	%rd<13>;
+
+	ld.param.u64 	%rd1, [regiondecode_param_0];
+	ld.param.u64 	%rd2, [regiondecode_param_1];
+	ld.param.u64 	%rd3, [regiondecode_param_2];
+	ld.param.u32 	%r2, [regiondecode_param_3];
+	mov.u32 	%r3, %ctaid.y;
+	mov.u32 	%r4, %nctaid.x;
+	mov.u32 	%r5, %ctaid.x;
+	mad.lo.s32 	%r6, %r3, %r4, %r5;
+	mov.u32 	%r7, %ntid.x;
+	mov.u32 	%r8, %tid.x;
+	mad.lo.s32 	%r1, %r6, %r7, %r8;
+	setp.ge.s32 	%p1, %r1, %r2;
+	@%p1 bra 	$L__BB0_2;
+	cvta.to.global.u64 	%rd4, %rd3;
+	cvta.to.global.u64 	%rd5, %rd2;
+	cvta.to.global.u64 	%rd6, %rd1;
+	cvt.s64.s32 	%rd7, %r1;
+	add.s64 	%rd8, %rd4, %rd7;
+	ld.global.nc.u8 	%rs1, [%rd8];
+	cvt.u32.u8 	%r9, %rs1;
+	mul.wide.u32 	%rd9, %r9, 4;
+	add.s64 	%rd10, %rd5, %rd9;
+	ld.global.nc.f32 	%f1, [%rd10];
+	mul.wide.s32 	%rd11, %r1, 4;
+	add.s64 	%rd12, %rd6, %rd11;
+	st.global.f32 	[%rd12], %f1;
+$L__BB0_2:
+	ret;
+
+}
+`
+	regiondecode_ptx_120 = `
+.version 8.8
+.target sm_120
+.address_size 64
+
+	// .globl	regiondecode
+
+.visible .entry regiondecode(
+	.param .u64 .ptr .align 1 regiondecode_param_0,
+	.param .u64 .ptr .align 1 regiondecode_param_1,
+	.param .u64 .ptr .align 1 regiondecode_param_2,
+	.param .u32 regiondecode_param_3
+)
+{
+	.reg .pred 	%p<2>;
+	.reg .b16 	%rs<2>;
+	.reg .b32 	%r<10>;
+	.reg .f32 	%f<2>;
+	.reg .b64 	%rd<13>;
+
+	ld.param.u64 	%rd1, [regiondecode_param_0];
+	ld.param.u64 	%rd2, [regiondecode_param_1];
+	ld.param.u64 	%rd3, [regiondecode_param_2];
+	ld.param.u32 	%r2, [regiondecode_param_3];
+	mov.u32 	%r3, %ctaid.y;
+	mov.u32 	%r4, %nctaid.x;
+	mov.u32 	%r5, %ctaid.x;
+	mad.lo.s32 	%r6, %r3, %r4, %r5;
+	mov.u32 	%r7, %ntid.x;
+	mov.u32 	%r8, %tid.x;
+	mad.lo.s32 	%r1, %r6, %r7, %r8;
+	setp.ge.s32 	%p1, %r1, %r2;
+	@%p1 bra 	$L__BB0_2;
+	cvta.to.global.u64 	%rd4, %rd3;
+	cvta.to.global.u64 	%rd5, %rd2;
+	cvta.to.global.u64 	%rd6, %rd1;
+	cvt.s64.s32 	%rd7, %r1;
+	add.s64 	%rd8, %rd4, %rd7;
+	ld.global.nc.u8 	%rs1, [%rd8];
+	cvt.u32.u8 	%r9, %rs1;
+	mul.wide.u32 	%rd9, %r9, 4;
+	add.s64 	%rd10, %rd5, %rd9;
+	ld.global.nc.f32 	%f1, [%rd10];
+	mul.wide.s32 	%rd11, %r1, 4;
+	add.s64 	%rd12, %rd6, %rd11;
+	st.global.f32 	[%rd12], %f1;
+$L__BB0_2:
+	ret;
+
+}
 `
 )

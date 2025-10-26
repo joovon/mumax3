@@ -90,10 +90,14 @@ func k_scaleemergentfield_async(Fx_scale unsafe.Pointer, Fy_scale unsafe.Pointer
 
 // maps compute capability on PTX code for scaleemergentfield kernel.
 var scaleemergentfield_map = map[int]string{0: "",
-	75: scaleemergentfield_ptx_75,
-	80: scaleemergentfield_ptx_80,
-	86: scaleemergentfield_ptx_86,
-	89: scaleemergentfield_ptx_89}
+	75:  scaleemergentfield_ptx_75,
+	80:  scaleemergentfield_ptx_80,
+	86:  scaleemergentfield_ptx_86,
+	87:  scaleemergentfield_ptx_87,
+	89:  scaleemergentfield_ptx_89,
+	90:  scaleemergentfield_ptx_90,
+	100: scaleemergentfield_ptx_100,
+	120: scaleemergentfield_ptx_120}
 
 // scaleemergentfield PTX code for various compute capabilities.
 const (
@@ -376,6 +380,99 @@ $L__BB0_2:
 }
 
 `
+	scaleemergentfield_ptx_87 = `
+.version 8.8
+.target sm_87
+.address_size 64
+
+	// .globl	scaleemergentfield
+
+.visible .entry scaleemergentfield(
+	.param .u64 scaleemergentfield_param_0,
+	.param .u64 scaleemergentfield_param_1,
+	.param .u64 scaleemergentfield_param_2,
+	.param .u64 scaleemergentfield_param_3,
+	.param .u64 scaleemergentfield_param_4,
+	.param .u64 scaleemergentfield_param_5,
+	.param .f32 scaleemergentfield_param_6,
+	.param .f32 scaleemergentfield_param_7,
+	.param .f32 scaleemergentfield_param_8,
+	.param .u32 scaleemergentfield_param_9,
+	.param .u32 scaleemergentfield_param_10,
+	.param .u32 scaleemergentfield_param_11
+)
+{
+	.reg .pred 	%p<6>;
+	.reg .f32 	%f<13>;
+	.reg .b32 	%r<18>;
+	.reg .b64 	%rd<20>;
+
+
+	ld.param.u64 	%rd1, [scaleemergentfield_param_0];
+	ld.param.u64 	%rd2, [scaleemergentfield_param_1];
+	ld.param.u64 	%rd3, [scaleemergentfield_param_2];
+	ld.param.u64 	%rd4, [scaleemergentfield_param_3];
+	ld.param.u64 	%rd5, [scaleemergentfield_param_4];
+	ld.param.u64 	%rd6, [scaleemergentfield_param_5];
+	ld.param.f32 	%f1, [scaleemergentfield_param_6];
+	ld.param.f32 	%f2, [scaleemergentfield_param_7];
+	ld.param.f32 	%f3, [scaleemergentfield_param_8];
+	ld.param.u32 	%r4, [scaleemergentfield_param_9];
+	ld.param.u32 	%r5, [scaleemergentfield_param_10];
+	ld.param.u32 	%r6, [scaleemergentfield_param_11];
+	mov.u32 	%r7, %ctaid.x;
+	mov.u32 	%r8, %ntid.x;
+	mov.u32 	%r9, %tid.x;
+	mad.lo.s32 	%r1, %r7, %r8, %r9;
+	mov.u32 	%r10, %ntid.y;
+	mov.u32 	%r11, %ctaid.y;
+	mov.u32 	%r12, %tid.y;
+	mad.lo.s32 	%r2, %r11, %r10, %r12;
+	mov.u32 	%r13, %ntid.z;
+	mov.u32 	%r14, %ctaid.z;
+	mov.u32 	%r15, %tid.z;
+	mad.lo.s32 	%r3, %r14, %r13, %r15;
+	setp.ge.s32 	%p1, %r1, %r4;
+	setp.ge.s32 	%p2, %r2, %r5;
+	or.pred  	%p3, %p1, %p2;
+	setp.ge.s32 	%p4, %r3, %r6;
+	or.pred  	%p5, %p3, %p4;
+	@%p5 bra 	$L__BB0_2;
+
+	cvta.to.global.u64 	%rd7, %rd4;
+	mad.lo.s32 	%r16, %r3, %r5, %r2;
+	mad.lo.s32 	%r17, %r16, %r4, %r1;
+	mul.wide.s32 	%rd8, %r17, 4;
+	add.s64 	%rd9, %rd7, %rd8;
+	ld.global.nc.f32 	%f4, [%rd9];
+	mul.f32 	%f5, %f4, %f2;
+	mul.f32 	%f6, %f5, %f3;
+	cvta.to.global.u64 	%rd10, %rd1;
+	add.s64 	%rd11, %rd10, %rd8;
+	st.global.f32 	[%rd11], %f6;
+	cvta.to.global.u64 	%rd12, %rd5;
+	add.s64 	%rd13, %rd12, %rd8;
+	ld.global.nc.f32 	%f7, [%rd13];
+	mul.f32 	%f8, %f7, %f1;
+	mul.f32 	%f9, %f8, %f3;
+	cvta.to.global.u64 	%rd14, %rd2;
+	add.s64 	%rd15, %rd14, %rd8;
+	st.global.f32 	[%rd15], %f9;
+	cvta.to.global.u64 	%rd16, %rd6;
+	add.s64 	%rd17, %rd16, %rd8;
+	ld.global.nc.f32 	%f10, [%rd17];
+	mul.f32 	%f11, %f10, %f1;
+	mul.f32 	%f12, %f11, %f2;
+	cvta.to.global.u64 	%rd18, %rd3;
+	add.s64 	%rd19, %rd18, %rd8;
+	st.global.f32 	[%rd19], %f12;
+
+$L__BB0_2:
+	ret;
+
+}
+
+`
 	scaleemergentfield_ptx_89 = `
 .version 8.8
 .target sm_89
@@ -468,5 +565,276 @@ $L__BB0_2:
 
 }
 
+`
+	scaleemergentfield_ptx_90 = `
+.version 8.8
+.target sm_90
+.address_size 64
+
+	// .globl	scaleemergentfield
+
+.visible .entry scaleemergentfield(
+	.param .u64 scaleemergentfield_param_0,
+	.param .u64 scaleemergentfield_param_1,
+	.param .u64 scaleemergentfield_param_2,
+	.param .u64 scaleemergentfield_param_3,
+	.param .u64 scaleemergentfield_param_4,
+	.param .u64 scaleemergentfield_param_5,
+	.param .f32 scaleemergentfield_param_6,
+	.param .f32 scaleemergentfield_param_7,
+	.param .f32 scaleemergentfield_param_8,
+	.param .u32 scaleemergentfield_param_9,
+	.param .u32 scaleemergentfield_param_10,
+	.param .u32 scaleemergentfield_param_11
+)
+{
+	.reg .pred 	%p<6>;
+	.reg .f32 	%f<13>;
+	.reg .b32 	%r<18>;
+	.reg .b64 	%rd<20>;
+
+
+	ld.param.u64 	%rd1, [scaleemergentfield_param_0];
+	ld.param.u64 	%rd2, [scaleemergentfield_param_1];
+	ld.param.u64 	%rd3, [scaleemergentfield_param_2];
+	ld.param.u64 	%rd4, [scaleemergentfield_param_3];
+	ld.param.u64 	%rd5, [scaleemergentfield_param_4];
+	ld.param.u64 	%rd6, [scaleemergentfield_param_5];
+	ld.param.f32 	%f1, [scaleemergentfield_param_6];
+	ld.param.f32 	%f2, [scaleemergentfield_param_7];
+	ld.param.f32 	%f3, [scaleemergentfield_param_8];
+	ld.param.u32 	%r4, [scaleemergentfield_param_9];
+	ld.param.u32 	%r5, [scaleemergentfield_param_10];
+	ld.param.u32 	%r6, [scaleemergentfield_param_11];
+	mov.u32 	%r7, %ctaid.x;
+	mov.u32 	%r8, %ntid.x;
+	mov.u32 	%r9, %tid.x;
+	mad.lo.s32 	%r1, %r7, %r8, %r9;
+	mov.u32 	%r10, %ntid.y;
+	mov.u32 	%r11, %ctaid.y;
+	mov.u32 	%r12, %tid.y;
+	mad.lo.s32 	%r2, %r11, %r10, %r12;
+	mov.u32 	%r13, %ntid.z;
+	mov.u32 	%r14, %ctaid.z;
+	mov.u32 	%r15, %tid.z;
+	mad.lo.s32 	%r3, %r14, %r13, %r15;
+	setp.ge.s32 	%p1, %r1, %r4;
+	setp.ge.s32 	%p2, %r2, %r5;
+	or.pred  	%p3, %p1, %p2;
+	setp.ge.s32 	%p4, %r3, %r6;
+	or.pred  	%p5, %p3, %p4;
+	@%p5 bra 	$L__BB0_2;
+
+	cvta.to.global.u64 	%rd7, %rd4;
+	mad.lo.s32 	%r16, %r3, %r5, %r2;
+	mad.lo.s32 	%r17, %r16, %r4, %r1;
+	mul.wide.s32 	%rd8, %r17, 4;
+	add.s64 	%rd9, %rd7, %rd8;
+	ld.global.nc.f32 	%f4, [%rd9];
+	mul.f32 	%f5, %f4, %f2;
+	mul.f32 	%f6, %f5, %f3;
+	cvta.to.global.u64 	%rd10, %rd1;
+	add.s64 	%rd11, %rd10, %rd8;
+	st.global.f32 	[%rd11], %f6;
+	cvta.to.global.u64 	%rd12, %rd5;
+	add.s64 	%rd13, %rd12, %rd8;
+	ld.global.nc.f32 	%f7, [%rd13];
+	mul.f32 	%f8, %f7, %f1;
+	mul.f32 	%f9, %f8, %f3;
+	cvta.to.global.u64 	%rd14, %rd2;
+	add.s64 	%rd15, %rd14, %rd8;
+	st.global.f32 	[%rd15], %f9;
+	cvta.to.global.u64 	%rd16, %rd6;
+	add.s64 	%rd17, %rd16, %rd8;
+	ld.global.nc.f32 	%f10, [%rd17];
+	mul.f32 	%f11, %f10, %f1;
+	mul.f32 	%f12, %f11, %f2;
+	cvta.to.global.u64 	%rd18, %rd3;
+	add.s64 	%rd19, %rd18, %rd8;
+	st.global.f32 	[%rd19], %f12;
+
+$L__BB0_2:
+	ret;
+
+}
+
+`
+	scaleemergentfield_ptx_100 = `
+.version 8.8
+.target sm_100
+.address_size 64
+
+	// .globl	scaleemergentfield
+
+.visible .entry scaleemergentfield(
+	.param .u64 .ptr .align 1 scaleemergentfield_param_0,
+	.param .u64 .ptr .align 1 scaleemergentfield_param_1,
+	.param .u64 .ptr .align 1 scaleemergentfield_param_2,
+	.param .u64 .ptr .align 1 scaleemergentfield_param_3,
+	.param .u64 .ptr .align 1 scaleemergentfield_param_4,
+	.param .u64 .ptr .align 1 scaleemergentfield_param_5,
+	.param .f32 scaleemergentfield_param_6,
+	.param .f32 scaleemergentfield_param_7,
+	.param .f32 scaleemergentfield_param_8,
+	.param .u32 scaleemergentfield_param_9,
+	.param .u32 scaleemergentfield_param_10,
+	.param .u32 scaleemergentfield_param_11
+)
+{
+	.reg .pred 	%p<6>;
+	.reg .b32 	%r<22>;
+	.reg .f32 	%f<13>;
+	.reg .b64 	%rd<21>;
+
+	ld.param.u64 	%rd2, [scaleemergentfield_param_1];
+	ld.param.u64 	%rd3, [scaleemergentfield_param_2];
+	ld.param.u64 	%rd4, [scaleemergentfield_param_3];
+	ld.param.u64 	%rd5, [scaleemergentfield_param_4];
+	ld.param.u64 	%rd6, [scaleemergentfield_param_5];
+	ld.param.f32 	%f1, [scaleemergentfield_param_6];
+	ld.param.f32 	%f2, [scaleemergentfield_param_7];
+	ld.param.f32 	%f3, [scaleemergentfield_param_8];
+	ld.param.u32 	%r4, [scaleemergentfield_param_9];
+	ld.param.u32 	%r6, [scaleemergentfield_param_10];
+	ld.param.u32 	%r7, [scaleemergentfield_param_11];
+	mov.u32 	%r9, %ctaid.x;
+	mov.u32 	%r10, %ntid.x;
+	mov.u32 	%r11, %tid.x;
+	mad.lo.s32 	%r1, %r9, %r10, %r11;
+	mov.u32 	%r12, %ctaid.y;
+	mov.u32 	%r13, %ntid.y;
+	mov.u32 	%r14, %tid.y;
+	mad.lo.s32 	%r15, %r12, %r13, %r14;
+	mov.u32 	%r16, %ctaid.z;
+	mov.u32 	%r17, %ntid.z;
+	mov.u32 	%r18, %tid.z;
+	mad.lo.s32 	%r19, %r16, %r17, %r18;
+	setp.ge.s32 	%p1, %r1, %r4;
+	setp.ge.s32 	%p2, %r15, %r6;
+	or.pred  	%p3, %p1, %p2;
+	setp.ge.s32 	%p4, %r19, %r7;
+	or.pred  	%p5, %p3, %p4;
+	@%p5 bra 	$L__BB0_2;
+	ld.param.u64 	%rd20, [scaleemergentfield_param_0];
+	cvta.to.global.u64 	%rd7, %rd4;
+	cvta.to.global.u64 	%rd8, %rd20;
+	cvta.to.global.u64 	%rd9, %rd5;
+	cvta.to.global.u64 	%rd10, %rd2;
+	cvta.to.global.u64 	%rd11, %rd6;
+	cvta.to.global.u64 	%rd12, %rd3;
+	mad.lo.s32 	%r20, %r6, %r19, %r15;
+	mad.lo.s32 	%r21, %r20, %r4, %r1;
+	mul.wide.s32 	%rd13, %r21, 4;
+	add.s64 	%rd14, %rd7, %rd13;
+	ld.global.nc.f32 	%f4, [%rd14];
+	mul.f32 	%f5, %f2, %f4;
+	mul.f32 	%f6, %f3, %f5;
+	add.s64 	%rd15, %rd8, %rd13;
+	st.global.f32 	[%rd15], %f6;
+	add.s64 	%rd16, %rd9, %rd13;
+	ld.global.nc.f32 	%f7, [%rd16];
+	mul.f32 	%f8, %f1, %f7;
+	mul.f32 	%f9, %f3, %f8;
+	add.s64 	%rd17, %rd10, %rd13;
+	st.global.f32 	[%rd17], %f9;
+	add.s64 	%rd18, %rd11, %rd13;
+	ld.global.nc.f32 	%f10, [%rd18];
+	mul.f32 	%f11, %f1, %f10;
+	mul.f32 	%f12, %f2, %f11;
+	add.s64 	%rd19, %rd12, %rd13;
+	st.global.f32 	[%rd19], %f12;
+$L__BB0_2:
+	ret;
+
+}
+`
+	scaleemergentfield_ptx_120 = `
+.version 8.8
+.target sm_120
+.address_size 64
+
+	// .globl	scaleemergentfield
+
+.visible .entry scaleemergentfield(
+	.param .u64 .ptr .align 1 scaleemergentfield_param_0,
+	.param .u64 .ptr .align 1 scaleemergentfield_param_1,
+	.param .u64 .ptr .align 1 scaleemergentfield_param_2,
+	.param .u64 .ptr .align 1 scaleemergentfield_param_3,
+	.param .u64 .ptr .align 1 scaleemergentfield_param_4,
+	.param .u64 .ptr .align 1 scaleemergentfield_param_5,
+	.param .f32 scaleemergentfield_param_6,
+	.param .f32 scaleemergentfield_param_7,
+	.param .f32 scaleemergentfield_param_8,
+	.param .u32 scaleemergentfield_param_9,
+	.param .u32 scaleemergentfield_param_10,
+	.param .u32 scaleemergentfield_param_11
+)
+{
+	.reg .pred 	%p<6>;
+	.reg .b32 	%r<22>;
+	.reg .f32 	%f<13>;
+	.reg .b64 	%rd<21>;
+
+	ld.param.u64 	%rd2, [scaleemergentfield_param_1];
+	ld.param.u64 	%rd3, [scaleemergentfield_param_2];
+	ld.param.u64 	%rd4, [scaleemergentfield_param_3];
+	ld.param.u64 	%rd5, [scaleemergentfield_param_4];
+	ld.param.u64 	%rd6, [scaleemergentfield_param_5];
+	ld.param.f32 	%f1, [scaleemergentfield_param_6];
+	ld.param.f32 	%f2, [scaleemergentfield_param_7];
+	ld.param.f32 	%f3, [scaleemergentfield_param_8];
+	ld.param.u32 	%r4, [scaleemergentfield_param_9];
+	ld.param.u32 	%r6, [scaleemergentfield_param_10];
+	ld.param.u32 	%r7, [scaleemergentfield_param_11];
+	mov.u32 	%r9, %ctaid.x;
+	mov.u32 	%r10, %ntid.x;
+	mov.u32 	%r11, %tid.x;
+	mad.lo.s32 	%r1, %r9, %r10, %r11;
+	mov.u32 	%r12, %ctaid.y;
+	mov.u32 	%r13, %ntid.y;
+	mov.u32 	%r14, %tid.y;
+	mad.lo.s32 	%r15, %r12, %r13, %r14;
+	mov.u32 	%r16, %ctaid.z;
+	mov.u32 	%r17, %ntid.z;
+	mov.u32 	%r18, %tid.z;
+	mad.lo.s32 	%r19, %r16, %r17, %r18;
+	setp.ge.s32 	%p1, %r1, %r4;
+	setp.ge.s32 	%p2, %r15, %r6;
+	or.pred  	%p3, %p1, %p2;
+	setp.ge.s32 	%p4, %r19, %r7;
+	or.pred  	%p5, %p3, %p4;
+	@%p5 bra 	$L__BB0_2;
+	ld.param.u64 	%rd20, [scaleemergentfield_param_0];
+	cvta.to.global.u64 	%rd7, %rd4;
+	cvta.to.global.u64 	%rd8, %rd20;
+	cvta.to.global.u64 	%rd9, %rd5;
+	cvta.to.global.u64 	%rd10, %rd2;
+	cvta.to.global.u64 	%rd11, %rd6;
+	cvta.to.global.u64 	%rd12, %rd3;
+	mad.lo.s32 	%r20, %r6, %r19, %r15;
+	mad.lo.s32 	%r21, %r20, %r4, %r1;
+	mul.wide.s32 	%rd13, %r21, 4;
+	add.s64 	%rd14, %rd7, %rd13;
+	ld.global.nc.f32 	%f4, [%rd14];
+	mul.f32 	%f5, %f2, %f4;
+	mul.f32 	%f6, %f3, %f5;
+	add.s64 	%rd15, %rd8, %rd13;
+	st.global.f32 	[%rd15], %f6;
+	add.s64 	%rd16, %rd9, %rd13;
+	ld.global.nc.f32 	%f7, [%rd16];
+	mul.f32 	%f8, %f1, %f7;
+	mul.f32 	%f9, %f3, %f8;
+	add.s64 	%rd17, %rd10, %rd13;
+	st.global.f32 	[%rd17], %f9;
+	add.s64 	%rd18, %rd11, %rd13;
+	ld.global.nc.f32 	%f10, [%rd18];
+	mul.f32 	%f11, %f1, %f10;
+	mul.f32 	%f12, %f2, %f11;
+	add.s64 	%rd19, %rd12, %rd13;
+	st.global.f32 	[%rd19], %f12;
+$L__BB0_2:
+	ret;
+
+}
 `
 )
